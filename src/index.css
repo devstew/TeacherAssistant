@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* Нижня навігація на телефоні не перекриває контент. */
+.pb-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .pb-nav {
+    padding-bottom: 2rem;
+  }
+}
+
+input[type='date'],
+input[type='time'],
+input[type='month'] {
+  min-height: 2.5rem;
+}
+
+/*
+ * Токени графіків. Кольори серій — з перевіреної палітри (validate_palette.js):
+ * серії 1–2 проходять CVD/контраст на білому й на slate-900; порядкова шкала
+ * рівнів допомоги — одна гама, монотонна світлота.
+ */
+.viz {
+  --viz-surface: #ffffff;
+  --viz-ink: #0b0b0b;
+  --viz-ink-2: #52514e;
+  --viz-muted: #898781;
+  --viz-grid: #ecebe6;
+  --viz-axis: #c3c2b7;
+  --viz-s1: #2a78d6;
+  --viz-s2: #eb6834;
+  --viz-spark: #b4b2aa;
+  --viz-good: #006300;
+  --viz-bad: #d03b3b;
+  --viz-ord-0: #86b6ef;
+  --viz-ord-1: #3987e5;
+  --viz-ord-2: #1c5cab;
+  --viz-ord-3: #0d366b;
+  --heat-0: #e6f0fd;
+  --heat-1: #cde2fb;
+  --heat-2: #9ec5f4;
+  --heat-3: #6da7ec;
+  --heat-4: #3987e5;
+  --heat-5: #256abf;
+  --heat-6: #184f95;
+  --heat-ink-0: #0b0b0b;
+  --heat-ink-1: #0b0b0b;
+  --heat-ink-2: #0b0b0b;
+  --heat-ink-3: #0b0b0b;
+  --heat-ink-4: #ffffff;
+  --heat-ink-5: #ffffff;
+  --heat-ink-6: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .viz {
+    --viz-surface: #0f172a;
+    --viz-ink: #ffffff;
+    --viz-ink-2: #c3c2b7;
+    --viz-muted: #94938c;
+    --viz-grid: #1e293b;
+    --viz-axis: #334155;
+    --viz-s1: #3987e5;
+    --viz-s2: #d95926;
+    --viz-spark: #55544f;
+    --viz-good: #0ca30c;
+    --viz-bad: #e66767;
+    --viz-ord-0: #184f95;
+    --viz-ord-1: #256abf;
+    --viz-ord-2: #5598e7;
+    --viz-ord-3: #9ec5f4;
+    /* Послідовна шкала в темній темі перевернута: «майже нуль» зливається з поверхнею. */
+    --heat-0: #13233d;
+    --heat-1: #104281;
+    --heat-2: #184f95;
+    --heat-3: #1c5cab;
+    --heat-4: #2a78d6;
+    --heat-5: #5598e7;
+    --heat-6: #9ec5f4;
+    --heat-ink-0: #ffffff;
+    --heat-ink-1: #ffffff;
+    --heat-ink-2: #ffffff;
+    --heat-ink-3: #ffffff;
+    --heat-ink-4: #ffffff;
+    --heat-ink-5: #0b0b0b;
+    --heat-ink-6: #0b0b0b;
+  }
+}
