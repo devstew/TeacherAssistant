@@ -33,6 +33,24 @@ export function buildSheetDays(ds: Dataset, onlyFilled: boolean): SheetDay[] {
   return days.filter((d) => hasDayData(d.day) || d.lessons.some((l) => l.lesson.absent || hasObservationData(l.obs)));
 }
 
+/** Порожній аркуш для друку: день без уроків у розкладі. */
+export function blankSheetDay(student: Student, date: ISODate, count = LESSONS_PER_SHEET): SheetDay {
+  return {
+    date,
+    lessons: Array.from({ length: count }, (_, i) => ({
+      lesson: {
+        id: `${student.id}:${date}:${i + 1}`,
+        studentId: student.id,
+        date,
+        lessonNumber: i + 1,
+        subject: '',
+        source: 'manual' as const,
+      },
+      time: lessonTime(student, i + 1),
+    })),
+  };
+}
+
 export function chunk<T>(xs: T[], size: number): T[][] {
   if (!xs.length) return [[]];
   const out: T[][] = [];

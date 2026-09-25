@@ -7,7 +7,7 @@ import { dataExtent, loadDataset } from '../../db/repo';
 import { fmtDate, monthEndISO, monthKey, monthStartISO, todayISO } from '../../domain/dates';
 import type { ISODate } from '../../domain/types';
 import { downloadBlob, safeFileName } from '../../export/download';
-import { buildSheetDays, periodLabel } from '../../export/sheetData';
+import { blankSheetDay, buildSheetDays, periodLabel } from '../../export/sheetData';
 import { Button, Card, Field, Input, Notice, PageTitle, cx } from '../../components/ui';
 
 type DocType = 'sheet' | 'journal' | 'report' | 'raw';
@@ -98,7 +98,9 @@ function ExportForm({
           blob = await reportDocx(student, period, report, charts, generatedAt);
         }
       } else {
-        const days = buildSheetDays(ds, type === 'journal' && onlyFilled);
+        let days = buildSheetDays(ds, type === 'journal' && onlyFilled);
+        // Для одного дня без уроків друкуємо порожній бланк — його заповнюють від руки.
+        if (!days.length && type === 'sheet') days = [blankSheetDay(student, range.from)];
         if (!days.length) {
           setStatus({ tone: 'warn', text: 'У вибраному періоді немає днів із даними.' });
           return;
