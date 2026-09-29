@@ -240,9 +240,10 @@ function CopyPrevious({ lesson, onCopy }: { lesson: Lesson; onCopy: (src: Lesson
   const t = useTheme();
   const source = useRepo(findPreviousObservation, lesson);
   if (!source) return null;
+  const when = source.date === lesson.date ? `урок ${source.lessonNumber}` : `${fmtDate(source.date, 'd MMMM')}, урок ${source.lessonNumber}`;
   return (
     <Button icon={<Copy color={t.subtle} size={16} />} onPress={() => onCopy(source)}>
-      {`Скопіювати з ${source.date}, урок ${source.lessonNumber}`}
+      {`Скопіювати з попереднього (${when})`}
     </Button>
   );
 }

@@ -267,28 +267,29 @@ function LessonRow({
         >
           <Text style={{ color: t.brandInk, fontWeight: '700' }}>{lesson.lessonNumber}</Text>
         </View>
+        {/* Назва предмета — головне в рядку, тож час і стан ідуть окремим стовпцем. */}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: sp.sm }}>
-            <Text style={{ color: t.text, fontSize: font.md, fontWeight: '600', flexShrink: 1 }} numberOfLines={1}>
-              {lesson.subject}
-            </Text>
-            {time && (
-              <Text style={{ color: t.muted, fontSize: font.xs }}>
-                {time.start}–{time.end}
-              </Text>
-            )}
-          </View>
+          <Text style={{ color: t.text, fontSize: font.md, fontWeight: '600' }} numberOfLines={1}>
+            {lesson.subject}
+          </Text>
           <Text style={{ color: t.muted, fontSize: font.sm }} numberOfLines={1}>
             {lesson.topic || 'Тема не вказана'}
           </Text>
         </View>
-        {lesson.absent ? (
-          <Badge tone="warn">н</Badge>
-        ) : hasObservationData(obs) ? (
-          <Badge tone="good">Заповнено</Badge>
-        ) : (
-          <Badge>Не заповн.</Badge>
-        )}
+        <View style={{ alignItems: 'flex-end', gap: 3 }}>
+          {time && (
+            <Text style={{ color: t.muted, fontSize: font.xs }}>
+              {time.start}–{time.end}
+            </Text>
+          )}
+          {lesson.absent ? (
+            <Badge tone="warn">н — відсутній</Badge>
+          ) : hasObservationData(obs) ? (
+            <Badge tone="good">Заповнено</Badge>
+          ) : (
+            <Badge>Не заповнено</Badge>
+          )}
+        </View>
       </Pressable>
       <Pressable
         accessibilityRole="checkbox"
