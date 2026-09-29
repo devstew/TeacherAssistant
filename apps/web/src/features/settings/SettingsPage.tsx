@@ -11,8 +11,10 @@ import { todayISO } from '@journal/core';
 import { downloadBlob } from '../../export/download';
 import { Button, Card, Field, Input, Notice, PageTitle, Select, Tabs } from '../../components/ui';
 import { StudentForm } from './StudentForm';
+import { SyncTab } from './SyncTab';
+import { useSync } from '../../sync/SyncProvider';
 
-type Tab = 'profile' | 'scoring' | 'data';
+type Tab = 'profile' | 'scoring' | 'data' | 'sync';
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('profile');
@@ -24,6 +26,7 @@ export default function SettingsPage() {
           { id: 'profile', label: 'Профіль дитини' },
           { id: 'scoring', label: 'Показники і ваги' },
           { id: 'data', label: 'Дані й резервна копія' },
+          { id: 'sync', label: 'Синхронізація' },
         ]}
         value={tab}
         onChange={setTab}
@@ -31,6 +34,7 @@ export default function SettingsPage() {
       {tab === 'profile' && <ProfileTab />}
       {tab === 'scoring' && <ScoringTab />}
       {tab === 'data' && <DataTab />}
+      {tab === 'sync' && <SyncTab />}
     </div>
   );
 }
@@ -243,6 +247,7 @@ function ScoringTab() {
 
 function DataTab() {
   const { student, students, setStudentId } = useStudents();
+  const sync = useSync();
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -258,8 +263,9 @@ function DataTab() {
     <div className="space-y-4">
       <Card title="Резервна копія">
         <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
-          Дані зберігаються лише в цьому браузері. Регулярно завантажуйте копію — нею ж переносять журнал на інший пристрій.
-          Під час відновлення записи зливаються: для кожного уроку залишається новіша версія.
+          {sync.email
+            ? 'Журнал синхронізується з вашим акаунтом, але копія — єдиний спосіб дістати дані поза застосунком. Під час відновлення записи зливаються: для кожного уроку залишається новіша версія.'
+            : 'Дані зберігаються лише в цьому браузері. Регулярно завантажуйте копію — нею ж переносять журнал на інший пристрій. Під час відновлення записи зливаються: для кожного уроку залишається новіша версія.'}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => saveBackup(false)}>
@@ -341,7 +347,17 @@ function DataTab() {
       <Card title="Про дані">
         <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
           <li>Спостереження стосуються дитини з особливими освітніми потребами — це чутливі персональні дані.</li>
-          <li>Застосунок нічого не надсилає в інтернет: база живе в IndexedDB цього браузера.</li>
+          {sync.email ? (
+            <li>
+              Записи зберігаються в цьому браузері й у вашому обліковому записі ({sync.email}) на захищеному сервері; доступ до
+              них має лише цей акаунт.
+            </li>
+          ) : (
+            <li>
+              Застосунок нічого не надсилає в інтернет: база живе в IndexedDB цього браузера. Синхронізація вмикається лише
+              після вашого входу на вкладці «Синхронізація».
+            </li>
+          )}
           <li>Очищення даних сайту в браузері видалить журнал — тримайте свіжу резервну копію.</li>
           <li>Для обміну документами зі школою використовуйте експорт PDF/DOCX; ведення журналу погоджуйте з батьками й адміністрацією.</li>
         </ul>

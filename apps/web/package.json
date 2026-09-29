@@ -15,6 +15,7 @@
   "dependencies": {
     "@journal/core": "*",
     "@react-pdf/renderer": "^4.9.0",
+    "@supabase/supabase-js": "^2.117.2",
     "date-fns": "^4.4.0",
     "dexie": "^4.4.6",
     "docx": "^9.7.1",

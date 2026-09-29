@@ -6,6 +6,7 @@ import { setStore, Store } from '@journal/core';
 import { DexieDriver } from './db/dexieDriver';
 import App from './App';
 import { StudentProvider } from './state/student';
+import { SyncProvider } from './sync/SyncProvider';
 import './index.css';
 
 // Сховище підключається один раз: ядро працює через порт, не знаючи про IndexedDB.
@@ -16,9 +17,11 @@ registerSW({ immediate: true });
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
-      <StudentProvider>
-        <App />
-      </StudentProvider>
+      <SyncProvider>
+        <StudentProvider>
+          <App />
+        </StudentProvider>
+      </SyncProvider>
     </HashRouter>
   </StrictMode>,
 );
