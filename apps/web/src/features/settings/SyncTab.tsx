@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { CloudOff, RefreshCw } from 'lucide-react';
-import { clearConflicts, getStore, listConflicts, type Conflict, type SyncStatus, type Tbl } from '@journal/core';
+import { clearConflicts, friendlyError, getStore, listConflicts, type Conflict, type SyncStatus, type Tbl } from '@journal/core';
 import { useSync } from '../../sync/SyncProvider';
-import { friendlyError } from '../../sync/errors';
 import { Badge, Button, Card, Field, Input, Notice } from '../../components/ui';
 
 const TABLE_LABEL: Record<Tbl, string> = {
