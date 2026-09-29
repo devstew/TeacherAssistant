@@ -4,20 +4,13 @@ import { useStudent } from '../../state/student';
 import { useRepo } from '@journal/core';
 import { deleteHoliday, listHolidays, listSlots, saveHoliday, saveStudent, setSlotSubject } from '@journal/core';
 import { fmtDate, minutesBetween, WEEKDAYS_FULL, WEEKDAYS_SHORT } from '@journal/core';
-import { newId, type Bell } from '@journal/core';
+import { COMMON_SUBJECTS, newId, type Bell } from '@journal/core';
 import { Button, Card, Field, Input, Notice, PageTitle, Tabs } from '../../components/ui';
 // Розбір Excel (SheetJS) вантажиться лише на вкладці імпорту.
 const HumanImport = lazy(() => import('./HumanImport'));
 
 type Tab = 'week' | 'bells' | 'holidays' | 'human';
 
-export const COMMON_SUBJECTS = [
-  'Українська мова', 'Читання', 'Математика', 'Я досліджую світ', 'Англійська мова', 'Мистецтво',
-  'Музичне мистецтво', 'Образотворче мистецтво', 'Фізкультура', 'Дизайн і технології', 'Інформатика',
-  'Українська література', 'Зарубіжна література', 'Історія України', 'Всесвітня історія', 'Географія',
-  'Біологія', 'Фізика', 'Хімія', 'Алгебра', 'Геометрія', "Основи здоров'я", 'Технології',
-  'Корекційно-розвиткове заняття',
-];
 
 export default function SchedulePage() {
   const [tab, setTab] = useState<Tab>('week');

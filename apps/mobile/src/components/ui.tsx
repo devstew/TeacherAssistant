@@ -33,14 +33,18 @@ export function Button({
   icon,
   children,
   style,
+  accessibilityLabel,
 }: {
   variant?: Variant;
   size?: 'sm' | 'md';
   onPress?: () => void;
   disabled?: boolean;
   icon?: ReactNode;
-  children: ReactNode;
+  /** Кнопка може бути й самим значком — напр. «видалити» в рядку списку. */
+  children?: ReactNode;
   style?: StyleProp<ViewStyle>;
+  /** Потрібен кнопці без підпису — самим значком. */
+  accessibilityLabel?: string;
 }) {
   const t = useTheme();
   const fill = variant === 'primary' ? t.brand : variant === 'ghost' ? 'transparent' : t.surface;
@@ -50,6 +54,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPress={onPress}
@@ -71,7 +76,9 @@ export function Button({
       ]}
     >
       {icon}
-      <Label style={{ color: ink, fontSize: font.sm, fontWeight: '600' }}>{children}</Label>
+      {children != null && children !== '' && (
+        <Label style={{ color: ink, fontSize: font.sm, fontWeight: '600' }}>{children}</Label>
+      )}
     </Pressable>
   );
 }

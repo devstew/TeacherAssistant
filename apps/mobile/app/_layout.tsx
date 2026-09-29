@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { openStore } from '@/db/database';
@@ -53,7 +53,7 @@ function Gate() {
         <ActivityIndicator color={t.brand} />
       </Center>
     );
-  return students.length ? <Slot /> : <Welcome />;
+  return students.length ? <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg } }} /> : <Welcome />;
 }
 
 function Center({ children }: { children: ReactNode }) {

@@ -8,6 +8,7 @@ export * from './domain/aggregate';
 export * from './domain/analysis';
 export * from './domain/insights';
 export * from './schedule/generateLessons';
+export * from './schedule/subjects';
 export * from './export/sheetData';
 export * from './export/reportData';
 export * from './export/fileName';
