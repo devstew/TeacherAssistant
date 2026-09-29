@@ -10,7 +10,7 @@ function book(rows: unknown[][]): XLSX.WorkBook {
 }
 
 const lesson = (date: string, n: number): Lesson => ({
-  id: `s:${date}:${n}`, studentId: 's', date, lessonNumber: n, subject: 'Математика', source: 'timetable',
+  id: `s:${date}:${n}`, studentId: 's', date, lessonNumber: n, subject: 'Математика', source: 'timetable', updatedAt: '',
 });
 
 describe('parseTopicsWorkbook', () => {

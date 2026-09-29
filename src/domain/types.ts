@@ -1,7 +1,19 @@
 import type { HelpLevel, Polarity } from './formSchema';
 
+export { newId, now, setEnv, type Env } from './env';
+
 /** Дата у форматі YYYY-MM-DD. */
 export type ISODate = string;
+
+/**
+ * Поля, потрібні для злиття даних між пристроями: час останньої зміни й
+ * м'яке видалення. Конфлікт вирішує новіший `updatedAt`, а видалений запис
+ * лишається «надгробком», щоб видалення дійшло до інших пристроїв.
+ */
+export interface Synced {
+  updatedAt: string;
+  deletedAt?: string;
+}
 
 export interface Bell {
   lessonNumber: number;
@@ -11,7 +23,7 @@ export interface Bell {
   end: string;
 }
 
-export interface Student {
+export interface Student extends Synced {
   id: string;
   /** ПІБ або псевдонім. */
   name: string;
@@ -32,7 +44,7 @@ export interface Student {
   createdAt: string;
 }
 
-export interface TimetableSlot {
+export interface TimetableSlot extends Synced {
   id: string;
   studentId: string;
   /** 1 = понеділок … 7 = неділя (ISO). */
@@ -43,7 +55,7 @@ export interface TimetableSlot {
   validTo?: ISODate;
 }
 
-export interface Holiday {
+export interface Holiday extends Synced {
   id: string;
   studentId: string;
   from: ISODate;
@@ -53,7 +65,7 @@ export interface Holiday {
 
 export type LessonSource = 'timetable' | 'manual' | 'human-file' | 'human-api';
 
-export interface Lesson {
+export interface Lesson extends Synced {
   /** `${studentId}:${date}:${lessonNumber}` — повторний імпорт не створює дублікатів. */
   id: string;
   studentId: string;
@@ -66,10 +78,9 @@ export interface Lesson {
   absenceMarker?: string;
   cancelled?: boolean;
   source: LessonSource;
-  updatedAt?: string;
 }
 
-export interface LessonObservation {
+export interface LessonObservation extends Synced {
   /** = id уроку. */
   id: string;
   studentId: string;
@@ -81,10 +92,9 @@ export interface LessonObservation {
   /** Скільки хвилин дитина утримувала увагу (поле «Не стійка ____» на бланку). */
   attentionMinutes?: number;
   comment?: string;
-  updatedAt: string;
 }
 
-export interface DayObservation {
+export interface DayObservation extends Synced {
   /** `${studentId}:${date}` */
   id: string;
   studentId: string;
@@ -93,7 +103,6 @@ export interface DayObservation {
   checks: string[];
   /** Примітка: досягнення, труднощі, навички самообслуговування, рекомендації. */
   note?: string;
-  updatedAt: string;
 }
 
 export interface ItemOverride {
@@ -101,7 +110,7 @@ export interface ItemOverride {
   weight?: number;
 }
 
-export interface Settings {
+export interface Settings extends Synced {
   id: 'global';
   itemOverrides: Record<string, ItemOverride>;
   independence: {
@@ -121,6 +130,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   id: 'global',
+  updatedAt: '',
   itemOverrides: {},
   independence: {
     levelWeight: 0.7,
@@ -144,7 +154,3 @@ export const DEFAULT_BELLS: Bell[] = [
   { lessonNumber: 6, start: '13:25', end: '14:10' },
   { lessonNumber: 7, start: '14:20', end: '15:05' },
 ];
-
-export function newId(): string {
-  return crypto.randomUUID();
-}

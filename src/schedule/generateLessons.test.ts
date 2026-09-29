@@ -4,10 +4,10 @@ import { DEFAULT_BELLS, type Holiday, type Student, type TimetableSlot } from '.
 
 const student: Student = {
   id: 's', name: 'Тест', className: '3-А', schoolYear: '2025/2026', yearStart: '2025-09-01', yearEnd: '2026-05-31',
-  assistantName: '', lessonMinutes: 45, bells: DEFAULT_BELLS, createdAt: '',
+  assistantName: '', lessonMinutes: 45, bells: DEFAULT_BELLS, createdAt: '', updatedAt: '',
 };
 const slot = (weekday: number, lessonNumber: number, subject: string, extra: Partial<TimetableSlot> = {}): TimetableSlot => ({
-  id: `${weekday}-${lessonNumber}`, studentId: 's', weekday, lessonNumber, subject, ...extra,
+  id: `${weekday}-${lessonNumber}`, studentId: 's', weekday, lessonNumber, subject, updatedAt: '', ...extra,
 });
 
 describe('generateLessons', () => {
@@ -25,7 +25,7 @@ describe('generateLessons', () => {
   });
 
   it('пропускає канікули й дати поза навчальним роком', () => {
-    const holidays: Holiday[] = [{ id: 'h', studentId: 's', from: '2025-11-03', to: '2025-11-04', title: 'Канікули' }];
+    const holidays: Holiday[] = [{ id: 'h', studentId: 's', from: '2025-11-03', to: '2025-11-04', title: 'Канікули', updatedAt: '' }];
     expect(generateLessons(student, slots, holidays, '2025-11-03', '2025-11-05').map((l) => l.date)).toEqual(['2025-11-05']);
     expect(generateLessons(student, slots, [], '2025-08-25', '2025-08-31')).toEqual([]);
     expect(generateLessons(student, slots, [], '2026-06-01', '2026-06-07')).toEqual([]);
@@ -44,7 +44,7 @@ describe('mergeLessons', () => {
     const merged = mergeLessons(gen, [
       { ...gen[0], topic: 'Таблиця множення', absent: true },
       { ...gen[1], cancelled: true },
-      { id: 's:2025-11-03:5', studentId: 's', date: '2025-11-03', lessonNumber: 5, subject: 'Гурток', source: 'manual' },
+      { id: 's:2025-11-03:5', studentId: 's', date: '2025-11-03', lessonNumber: 5, subject: 'Гурток', source: 'manual', updatedAt: '' },
     ]);
     expect(merged.map((l) => [l.lessonNumber, l.subject, l.topic, l.absent])).toEqual([
       [1, 'Математика', 'Таблиця множення', true],

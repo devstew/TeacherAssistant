@@ -1,8 +1,8 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { db } from './db';
+import { db, EPOCH } from './db';
 import { exportBackup, importBackup, parseBackup } from './backup';
-import { getLessonsForRange, loadDataset, saveLessonObs, setAbsent } from './repo';
+import { getLessonsForRange, listSlots, loadDataset, saveLessonObs, setAbsent, setSlotSubject } from './repo';
 import { DEMO_HISTORY_ID, seedDemo } from '../dev/seed';
 import { applyAbsences } from '../integrations/human/apply';
 import { bucketize } from '../domain/aggregate';
@@ -36,6 +36,34 @@ describe('резервна копія', () => {
     await saveLessonObs(lesson, { checks: ['beh.adequate'], comment: 'новіше' });
     await importBackup(old);
     expect((await db.lessonObs.get(lesson.id))?.comment).toBe('новіше');
+  });
+
+  it('стара копія не повертає старий розклад (злиття за часом зміни)', async () => {
+    const { history } = await seedDemo();
+    const old = await exportBackup();
+    await setSlotSubject(history.id, 1, 1, 'Новий предмет');
+
+    await importBackup(old);
+
+    const slot = (await listSlots(history.id)).find((x) => x.weekday === 1 && x.lessonNumber === 1);
+    expect(slot?.subject).toBe('Новий предмет');
+  });
+
+  it('читає копію версії 1: записам без часу зміни ставиться епоха', async () => {
+    const { history } = await seedDemo();
+    const v1 = JSON.parse(JSON.stringify(await exportBackup())) as Record<string, unknown>;
+    v1.version = 1;
+    for (const table of ['students', 'timetable', 'holidays', 'lessons', 'lessonObs', 'dayObs', 'settings']) {
+      for (const row of v1[table] as Record<string, unknown>[]) delete row.updatedAt;
+    }
+    const parsed = parseBackup(v1);
+    expect(parsed.students[0].updatedAt).toBe(EPOCH);
+
+    await setSlotSubject(history.id, 1, 1, 'Локальна зміна');
+    await importBackup(parsed);
+
+    const slot = (await listSlots(history.id)).find((x) => x.weekday === 1 && x.lessonNumber === 1);
+    expect(slot?.subject).toBe('Локальна зміна');
   });
 
   it('відхиляє чужий файл з поясненням', () => {

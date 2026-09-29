@@ -1,12 +1,14 @@
 import { db, STUDENT_TABLES } from './db';
 import { generateLessons, lessonDuration, mergeLessons } from '../schedule/generateLessons';
 import { schoolYearFor, todayISO } from '../domain/dates';
+import { hasObservationData } from '../domain/scoring';
 import {
   DEFAULT_BELLS,
   DEFAULT_SETTINGS,
   dayId,
   lessonId,
   newId,
+  now,
   type DayObservation,
   type Holiday,
   type ISODate,
@@ -18,13 +20,13 @@ import {
 } from '../domain/types';
 import type { StatsInput } from '../domain/aggregate';
 
-const now = () => new Date().toISOString();
-
 // ---------- Налаштування ----------
 
 export function mergeSettings(s?: Partial<Settings>): Settings {
   return {
     id: 'global',
+    updatedAt: s?.updatedAt ?? DEFAULT_SETTINGS.updatedAt,
+    deletedAt: s?.deletedAt,
     itemOverrides: { ...DEFAULT_SETTINGS.itemOverrides, ...s?.itemOverrides },
     independence: {
       ...DEFAULT_SETTINGS.independence,
@@ -40,7 +42,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export async function saveSettings(s: Settings): Promise<void> {
-  await db.settings.put(mergeSettings(s));
+  await db.settings.put({ ...mergeSettings(s), updatedAt: now() });
 }
 
 // ---------- Діти ----------
@@ -58,6 +60,7 @@ export function newStudent(partial: Partial<Student> = {}): Student {
     lessonMinutes: 45,
     bells: DEFAULT_BELLS.map((b) => ({ ...b })),
     createdAt: now(),
+    updatedAt: now(),
     ...partial,
   };
 }
@@ -67,7 +70,7 @@ export async function listStudents(): Promise<Student[]> {
 }
 
 export async function saveStudent(s: Student): Promise<void> {
-  await db.students.put(s);
+  await db.students.put({ ...s, updatedAt: now() });
 }
 
 export async function deleteStudent(id: string): Promise<void> {
@@ -99,7 +102,11 @@ export async function setSlotSubject(
     if (existing) await db.timetable.delete(existing.id);
     return;
   }
-  await db.timetable.put({ ...(existing ?? { id: newId(), studentId, weekday, lessonNumber }), subject: value });
+  await db.timetable.put({
+    ...(existing ?? { id: newId(), studentId, weekday, lessonNumber }),
+    subject: value,
+    updatedAt: now(),
+  });
 }
 
 export async function listHolidays(studentId: string): Promise<Holiday[]> {
@@ -108,7 +115,7 @@ export async function listHolidays(studentId: string): Promise<Holiday[]> {
 }
 
 export async function saveHoliday(h: Holiday): Promise<void> {
-  await db.holidays.put(h);
+  await db.holidays.put({ ...h, updatedAt: now() });
 }
 
 export async function deleteHoliday(id: string): Promise<void> {
@@ -152,6 +159,7 @@ export async function addManualLesson(
       lessonNumber,
       subject,
       source: 'manual',
+      updatedAt: now(),
     },
     { subject, cancelled: false },
   );
@@ -200,6 +208,21 @@ export async function saveLessonObs(lesson: Lesson, patch: Patch<LessonObservati
     await db.lessonObs.put(next);
     return next;
   });
+}
+
+/**
+ * Останнє заповнене спостереження перед цим уроком — для кнопки
+ * «Скопіювати з попереднього уроку».
+ */
+export async function findPreviousObservation(lesson: Lesson): Promise<LessonObservation | undefined> {
+  const rows = await db.lessonObs
+    .where('[studentId+date]')
+    .between([lesson.studentId, '0000-00-00'], [lesson.studentId, lesson.date], true, true)
+    .toArray();
+  return rows
+    .filter((o) => (o.date < lesson.date || o.lessonNumber < lesson.lessonNumber) && hasObservationData(o))
+    .sort((a, b) => (a.date === b.date ? a.lessonNumber - b.lessonNumber : a.date.localeCompare(b.date)))
+    .at(-1);
 }
 
 export async function listLessonObs(studentId: string, from: ISODate, to: ISODate): Promise<LessonObservation[]> {

@@ -45,8 +45,9 @@ type Row = unknown[];
 
 const ABSENCE_MARKER = /^(н|нб|нп|н\/п|хв|хв\.|п|пп|пр|в|б|х|відс|відсутній)$/iu;
 
-export function readWorkbook(data: ArrayBuffer): XLSX.WorkBook {
-  return XLSX.read(data, { type: 'array', cellDates: true });
+/** ArrayBuffer — з браузера, рядок base64 — з файлової системи телефона. */
+export function readWorkbook(data: ArrayBuffer | string): XLSX.WorkBook {
+  return XLSX.read(data, { type: typeof data === 'string' ? 'base64' : 'array', cellDates: true });
 }
 
 function sheetRows(ws: XLSX.WorkSheet): Row[] {

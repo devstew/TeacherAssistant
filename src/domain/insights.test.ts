@@ -9,7 +9,7 @@ function month(key: string, n: number, bad: number) {
   const obs: LessonObservation[] = [];
   for (let i = 0; i < n; i++) {
     const date = `${key}-${String(3 + (i % 20)).padStart(2, '0')}`;
-    const l: Lesson = { id: `s:${date}:${i}`, studentId: 's', date, lessonNumber: (i % 5) + 1, subject: i % 2 ? 'Математика' : 'Мистецтво', source: 'timetable' };
+    const l: Lesson = { id: `s:${date}:${i}`, studentId: 's', date, lessonNumber: (i % 5) + 1, subject: i % 2 ? 'Математика' : 'Мистецтво', source: 'timetable', updatedAt: '' };
     lessons.push(l);
     const isBad = i < bad;
     obs.push({

@@ -3,7 +3,7 @@ import { bucketize, computeStats, linearSlope, type StatsInput } from './aggrega
 import { DEFAULT_SETTINGS, type DayObservation, type Lesson, type LessonObservation } from './types';
 
 const lesson = (date: string, n: number, extra: Partial<Lesson> = {}): Lesson => ({
-  id: `s:${date}:${n}`, studentId: 's', date, lessonNumber: n, subject: 'Математика', source: 'timetable', ...extra,
+  id: `s:${date}:${n}`, studentId: 's', date, lessonNumber: n, subject: 'Математика', source: 'timetable', updatedAt: '', ...extra,
 });
 const obs = (l: Lesson, checks: string[], extra: Partial<LessonObservation> = {}): LessonObservation => ({
   id: l.id, studentId: 's', date: l.date, lessonNumber: l.lessonNumber, checks, updatedAt: '', ...extra,

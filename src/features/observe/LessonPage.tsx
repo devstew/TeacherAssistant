@@ -2,8 +2,16 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ChevronLeft, ChevronRight, ClipboardList, Copy, Eraser } from 'lucide-react';
 import { useStudent } from '../../state/student';
-import { db } from '../../db/db';
-import { getLessonObs, getLessonsForRange, getSettings, saveLessonObs, setAbsent, topicsForSubject, upsertLesson } from '../../db/repo';
+import {
+  findPreviousObservation,
+  getLessonObs,
+  getLessonsForRange,
+  getSettings,
+  saveLessonObs,
+  setAbsent,
+  topicsForSubject,
+  upsertLesson,
+} from '../../db/repo';
 import {
   ASSISTANT,
   ATTENTION,
@@ -202,16 +210,7 @@ function ScoresBar({ scores }: { scores: ReturnType<typeof scoreLesson> | null }
 }
 
 function CopyPrevious({ lesson, onCopy }: { lesson: Lesson; onCopy: (src: LessonObservation) => void }) {
-  const source = useLiveQuery(async () => {
-    const rows = await db.lessonObs
-      .where('[studentId+date]')
-      .between([lesson.studentId, '0000-00-00'], [lesson.studentId, lesson.date], true, true)
-      .toArray();
-    return rows
-      .filter((o) => (o.date < lesson.date || o.lessonNumber < lesson.lessonNumber) && hasObservationData(o))
-      .sort((a, b) => (a.date === b.date ? a.lessonNumber - b.lessonNumber : a.date.localeCompare(b.date)))
-      .at(-1);
-  }, [lesson.id]);
+  const source = useLiveQuery(() => findPreviousObservation(lesson), [lesson.id]);
   if (!source) return null;
   return (
     <Button onClick={() => onCopy(source)} title={`${source.date}, урок ${source.lessonNumber}`}>

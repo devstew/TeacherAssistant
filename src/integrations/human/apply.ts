@@ -32,6 +32,7 @@ export async function applyAbsences(student: Student, records: AbsenceRecord[]):
           lessonNumber: r.lessonNumber,
           subject: r.subject ?? '—',
           source: 'human-file',
+          updatedAt: now,
         },
       );
       continue;

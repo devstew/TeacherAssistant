@@ -9,9 +9,4 @@ export function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-/** Ім'я файлу без недопустимих символів: «Журнал_Андрій_К_2025-11.pdf». */
-export const safeFileName = (s: string) =>
-  s
-    .replace(/[\\/:*?"<>|.,]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, '_');
+export { safeFileName } from './fileName';

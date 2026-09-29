@@ -45,6 +45,7 @@ export function blankSheetDay(student: Student, date: ISODate, count = LESSONS_P
         lessonNumber: i + 1,
         subject: '',
         source: 'manual' as const,
+        updatedAt: '',
       },
       time: lessonTime(student, i + 1),
     })),

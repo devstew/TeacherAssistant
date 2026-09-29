@@ -4,11 +4,13 @@
  */
 import { z } from 'zod';
 import type { Table } from 'dexie';
-import { db } from './db';
+import { db, EPOCH } from './db';
 import { mergeSettings } from './repo';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'дата має бути у форматі YYYY-MM-DD');
 const helpLevel = z.enum(['none', 'periodic', 'partial', 'full']);
+/** Копії версії 1 не мали часу зміни — підставляємо епоху, щоб вони програвали свіжим записам. */
+const synced = { updatedAt: z.string().default(EPOCH), deletedAt: z.string().optional() };
 const polarity = z.union([z.literal(1), z.literal(-1), z.literal(0)]);
 
 const StudentSchema = z.object({
@@ -24,6 +26,7 @@ const StudentSchema = z.object({
   bells: z.array(z.object({ lessonNumber: z.number(), start: z.string(), end: z.string() })),
   isDemo: z.boolean().optional(),
   createdAt: z.string(),
+  ...synced,
 });
 
 const SlotSchema = z.object({
@@ -34,9 +37,17 @@ const SlotSchema = z.object({
   subject: z.string(),
   validFrom: date.optional(),
   validTo: date.optional(),
+  ...synced,
 });
 
-const HolidaySchema = z.object({ id: z.string(), studentId: z.string(), from: date, to: date, title: z.string() });
+const HolidaySchema = z.object({
+  id: z.string(),
+  studentId: z.string(),
+  from: date,
+  to: date,
+  title: z.string(),
+  ...synced,
+});
 
 const LessonSchema = z.object({
   id: z.string(),
@@ -49,7 +60,7 @@ const LessonSchema = z.object({
   absenceMarker: z.string().optional(),
   cancelled: z.boolean().optional(),
   source: z.enum(['timetable', 'manual', 'human-file', 'human-api']),
-  updatedAt: z.string().optional(),
+  ...synced,
 });
 
 const LessonObsSchema = z.object({
@@ -61,7 +72,7 @@ const LessonObsSchema = z.object({
   helpLevel: helpLevel.optional(),
   attentionMinutes: z.number().optional(),
   comment: z.string().optional(),
-  updatedAt: z.string(),
+  ...synced,
 });
 
 const DayObsSchema = z.object({
@@ -70,7 +81,7 @@ const DayObsSchema = z.object({
   date,
   checks: z.array(z.string()),
   note: z.string().optional(),
-  updatedAt: z.string(),
+  ...synced,
 });
 
 const SettingsSchema = z.object({
@@ -82,11 +93,13 @@ const SettingsSchema = z.object({
     levels: z.object({ none: z.number(), periodic: z.number(), partial: z.number(), full: z.number() }),
   }),
   insights: z.object({ minLessons: z.number(), minDelta: z.number(), minItemDelta: z.number() }),
+  ...synced,
 });
 
 export const BackupSchema = z.object({
   app: z.literal('assistant-journal'),
-  version: z.literal(1),
+  /** 1 — копії до появи синхронізації, читаються й досі. */
+  version: z.union([z.literal(1), z.literal(2)]),
   exportedAt: z.string(),
   students: z.array(StudentSchema),
   timetable: z.array(SlotSchema),
@@ -114,7 +127,7 @@ export async function exportBackup(studentId?: string): Promise<Backup> {
   ]);
   return {
     app: 'assistant-journal',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     students: studentId ? students.filter((s) => s.id === studentId) : students,
     timetable: by(timetable),
@@ -161,17 +174,22 @@ async function putNewer<T extends { id: string; updatedAt?: string }>(
 export async function importBackup(b: Backup): Promise<ImportSummary> {
   const tables = [db.students, db.timetable, db.holidays, db.lessons, db.lessonObs, db.dayObs, db.settings];
   return db.transaction('rw', tables, async () => {
-    await db.students.bulkPut(b.students);
-    await db.timetable.bulkPut(b.timetable);
-    await db.holidays.bulkPut(b.holidays);
+    // Усі таблиці зливаються за часом зміни: інакше стара копія повертала б
+    // старий розклад чи профіль на всіх пристроях.
     const parts = [
+      await putNewer(db.students, b.students),
+      await putNewer(db.timetable, b.timetable),
+      await putNewer(db.holidays, b.holidays),
       await putNewer(db.lessons, b.lessons),
       await putNewer(db.lessonObs, b.lessonObs),
       await putNewer(db.dayObs, b.dayObs),
     ];
-    if (b.settings[0]) await db.settings.put(mergeSettings(b.settings[0]));
+    const incoming = b.settings[0];
+    if (incoming && newer(await db.settings.get('global'), incoming)) {
+      await db.settings.put(mergeSettings(incoming));
+    }
     return {
-      written: b.students.length + b.timetable.length + b.holidays.length + parts.reduce((s, p) => s + p.written, 0),
+      written: parts.reduce((s, p) => s + p.written, 0),
       skipped: parts.reduce((s, p) => s + p.skipped, 0),
     };
   });

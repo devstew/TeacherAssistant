@@ -164,6 +164,7 @@ function buildProfile(p: DemoProfile): DemoData {
     bells: BELLS.map((b) => ({ ...b })),
     isDemo: true,
     createdAt: new Date().toISOString(),
+    updatedAt: `${p.to}T16:00:00.000Z`,
   };
 
   const slots: TimetableSlot[] = Object.entries(p.timetable).flatMap(([wd, subjects]) =>
@@ -173,9 +174,15 @@ function buildProfile(p: DemoProfile): DemoData {
       weekday: Number(wd),
       lessonNumber: i + 1,
       subject,
+      updatedAt: `${p.from}T08:00:00.000Z`,
     })),
   );
-  const holidays: Holiday[] = p.holidays.map((h, i) => ({ id: `${p.id}-hol-${i}`, studentId: p.id, ...h }));
+  const holidays: Holiday[] = p.holidays.map((h, i) => ({
+    id: `${p.id}-hol-${i}`,
+    studentId: p.id,
+    updatedAt: `${p.from}T08:00:00.000Z`,
+    ...h,
+  }));
 
   const generated = generateLessons(student, slots, holidays, p.from, p.to);
   for (const extra of p.extraLessons ?? []) {
@@ -189,6 +196,7 @@ function buildProfile(p: DemoProfile): DemoData {
         lessonNumber: extra.lessonNumber,
         subject: extra.subject,
         source: 'manual',
+        updatedAt: `${date}T15:00:00.000Z`,
       });
     }
   }

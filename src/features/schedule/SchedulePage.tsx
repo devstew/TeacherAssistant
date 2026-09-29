@@ -192,7 +192,7 @@ function HolidaysEditor() {
         onSubmit={async (e) => {
           e.preventDefault();
           if (!from || !to || to < from) return;
-          await saveHoliday({ id: newId(), studentId: student.id, title: title.trim() || 'Канікули', from, to });
+          await saveHoliday({ id: newId(), studentId: student.id, title: title.trim() || 'Канікули', from, to, updatedAt: '' });
           setTitle('');
           setFrom('');
           setTo('');

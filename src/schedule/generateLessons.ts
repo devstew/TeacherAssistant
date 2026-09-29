@@ -42,6 +42,8 @@ export function generateLessons(
         lessonNumber: slot.lessonNumber,
         subject: slot.subject.trim(),
         source: 'timetable',
+        // Порожній час означає «ще не зберігали»: такий урок програє будь-якому запису.
+        updatedAt: '',
       });
     }
   }
