@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { AlertCircle, FileDown, Info, TrendingDown, TrendingUp } from 'lucide-react';
 import { useStudent } from '../../state/student';
-import { dataExtent, loadDataset, type Dataset } from '../../db/repo';
+import { useQuery, useRepo } from '@journal/core';
+import { dataExtent, loadDataset, type Dataset } from '@journal/core';
 import { analyze, weeklyTrend, type Analysis } from '@journal/core';
 import { METRIC_LABELS, delta, type Bucket, type Grouping, type MetricId } from '@journal/core';
 import { fmtDelta, type Insight } from '@journal/core';
@@ -59,7 +59,7 @@ export function resolveRange(
 
 export default function DashboardPage() {
   const student = useStudent();
-  const extent = useLiveQuery(async () => (await dataExtent(student.id)) ?? null, [student.id]);
+  const extent = useRepo(dataExtent, student.id);
   const [preset, setPreset] = useState<Preset>('all');
   const [custom, setCustom] = useState({ from: student.yearStart, to: todayISO() });
   const [groupingChoice, setGroupingChoice] = useState<Grouping | null>(null);
@@ -154,10 +154,14 @@ function SubjectFilter({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const subjects = useLiveQuery(async () => {
-    const ds = await loadDataset(student, range.from, range.to);
-    return [...new Set(ds.lessons.map((l) => l.subject))].sort((a, b) => a.localeCompare(b, 'uk'));
-  }, [student, range.from, range.to]);
+  const subjects = useQuery(
+    async () => {
+      const ds = await loadDataset(student, range.from, range.to);
+      return [...new Set(ds.lessons.map((l) => l.subject))].sort((a, b) => a.localeCompare(b, 'uk'));
+    },
+    loadDataset.tables,
+    [student.id, range.from, range.to],
+  );
   return (
     <Field label="Предмет" className="w-56">
       <Select value={value} onChange={(e) => onChange(e.target.value)}>
@@ -189,7 +193,7 @@ function DashboardBody({
   grouping: Grouping;
   subject: string;
 }) {
-  const ds = useLiveQuery(() => loadDataset(student, range.from, range.to), [student, range.from, range.to]);
+  const ds = useRepo(loadDataset, student, range.from, range.to);
   const analysis = useMemo(() => (ds ? analyze(filterDataset(ds, subject), grouping) : undefined), [ds, subject, grouping]);
   if (!analysis || !ds) return <div className="p-6 text-sm text-slate-500">Рахую показники…</div>;
   const { overall } = analysis;

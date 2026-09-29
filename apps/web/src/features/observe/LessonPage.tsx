@@ -1,5 +1,4 @@
 import { Link, useNavigate, useParams } from 'react-router';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ChevronLeft, ChevronRight, ClipboardList, Copy, Eraser } from 'lucide-react';
 import { useStudent } from '../../state/student';
 import {
@@ -11,7 +10,7 @@ import {
   setAbsent,
   topicsForSubject,
   upsertLesson,
-} from '../../db/repo';
+} from '@journal/core';
 import {
   ASSISTANT,
   ATTENTION,
@@ -23,6 +22,7 @@ import {
   toggleCheck,
   type HelpLevel,
 } from '@journal/core';
+import { useQuery, useRepo } from '@journal/core';
 import { hasObservationData, scoreLesson } from '@journal/core';
 import { lessonDuration, lessonTime } from '@journal/core';
 import { fmtDate } from '@journal/core';
@@ -35,10 +35,10 @@ export default function LessonPage() {
   const student = useStudent();
   const { date = '', n = '' } = useParams();
   const lessonNumber = Number(n);
-  const lessons = useLiveQuery(() => getLessonsForRange(student, date, date), [student, date]);
+  const lessons = useRepo(getLessonsForRange, student, date, date);
   const lesson = lessons?.find((l) => l.lessonNumber === lessonNumber);
-  const obs = useLiveQuery(() => (lesson ? getLessonObs(lesson.id) : undefined), [lesson?.id]);
-  const settings = useLiveQuery(() => getSettings(), []);
+  const obs = useQuery(async () => (lesson ? getLessonObs(lesson.id) : undefined), getLessonObs.tables, [lesson?.id]);
+  const settings = useRepo(getSettings);
 
   if (!lessons || !settings) return <div className="p-6 text-sm text-slate-500">Завантаження…</div>;
   if (!lesson) {
@@ -143,7 +143,7 @@ export default function LessonPage() {
 
 function TopicField({ lesson }: { lesson: Lesson }) {
   const [topic, setTopic] = useDebouncedField(lesson.topic ?? '', (v) => upsertLesson(lesson, { topic: v.trim() || undefined }));
-  const suggestions = useLiveQuery(() => topicsForSubject(lesson.studentId, lesson.subject), [lesson.studentId, lesson.subject]);
+  const suggestions = useRepo(topicsForSubject, lesson.studentId, lesson.subject);
   const listId = `topics-${lesson.id}`;
   return (
     <Field label="Тема уроку" className="mt-3">
@@ -210,7 +210,7 @@ function ScoresBar({ scores }: { scores: ReturnType<typeof scoreLesson> | null }
 }
 
 function CopyPrevious({ lesson, onCopy }: { lesson: Lesson; onCopy: (src: LessonObservation) => void }) {
-  const source = useLiveQuery(() => findPreviousObservation(lesson), [lesson.id]);
+  const source = useRepo(findPreviousObservation, lesson);
   if (!source) return null;
   return (
     <Button onClick={() => onCopy(source)} title={`${source.date}, урок ${source.lessonNumber}`}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { newStudent, saveStudent } from '../../db/repo';
+import { newStudent, saveStudent } from '@journal/core';
 import { DEMO_ENABLED, seedDemo } from '../../dev/seed';
 import { useStudents } from '../../state/student';
 import { Button, Card } from '../../components/ui';

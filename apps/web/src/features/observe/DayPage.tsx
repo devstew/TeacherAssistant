@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft } from 'lucide-react';
 import { useStudent } from '../../state/student';
-import { getDayObs, getLessonsForRange, getSettings, listLessonObs, saveDayObs } from '../../db/repo';
+import { useQuery } from '@journal/core';
+import { getDayObs, getLessonsForRange, getSettings, listLessonObs, saveDayObs } from '@journal/core';
 import { SOCIAL, toggleCheck } from '@journal/core';
 import { hasObservationData, mean, scoreDay, scoreLesson } from '@journal/core';
 import { lessonDuration } from '@journal/core';
@@ -15,7 +15,7 @@ import { CategoryBlock } from './CategoryBlock';
 export default function DayPage() {
   const student = useStudent();
   const { date = '' } = useParams();
-  const data = useLiveQuery(async () => {
+  const data = useQuery(async () => {
     const [lessons, obs, day, settings] = await Promise.all([
       getLessonsForRange(student, date, date),
       listLessonObs(student.id, date, date),
@@ -23,7 +23,7 @@ export default function DayPage() {
       getSettings(),
     ]);
     return { lessons, obs: new Map(obs.map((o) => [o.id, o])), day, settings };
-  }, [student, date]);
+  }, ['lessons', 'timetable', 'holidays', 'lessonObs', 'dayObs', 'settings'], [student.id, date]);
 
   if (!data) return <div className="p-6 text-sm text-slate-500">Завантаження…</div>;
   const { lessons, obs, day, settings } = data;

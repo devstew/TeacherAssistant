@@ -3,9 +3,8 @@
  * При злитті спостережень і уроків перемагає новіший запис (updatedAt).
  */
 import { z } from 'zod';
-import type { Table } from 'dexie';
-import { db, EPOCH } from './db';
-import { mergeSettings } from './repo';
+import { getStore, mergeSettings, type Row, type Store, type Tbl } from '@journal/core';
+import { EPOCH } from './db';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'дата має бути у форматі YYYY-MM-DD');
 const helpLevel = z.enum(['none', 'periodic', 'partial', 'full']);
@@ -112,18 +111,19 @@ export const BackupSchema = z.object({
 
 export type Backup = z.infer<typeof BackupSchema>;
 
-/** Вивантажує всю базу або дані однієї дитини. */
+/** Вивантажує всю базу або дані однієї дитини. Видалені записи в копію не потрапляють. */
 export async function exportBackup(studentId?: string): Promise<Backup> {
+  const store = getStore();
   const by = <T extends { studentId: string }>(rows: T[]) =>
     studentId ? rows.filter((r) => r.studentId === studentId) : rows;
   const [students, timetable, holidays, lessons, lessonObs, dayObs, settings] = await Promise.all([
-    db.students.toArray(),
-    db.timetable.toArray(),
-    db.holidays.toArray(),
-    db.lessons.toArray(),
-    db.lessonObs.toArray(),
-    db.dayObs.toArray(),
-    db.settings.toArray(),
+    store.all('students'),
+    store.all('timetable'),
+    store.all('holidays'),
+    store.all('lessons'),
+    store.all('lessonObs'),
+    store.all('dayObs'),
+    store.all('settings'),
   ]);
   return {
     app: 'assistant-journal',
@@ -161,36 +161,38 @@ export interface ImportSummary {
   skipped: number;
 }
 
-async function putNewer<T extends { id: string; updatedAt?: string }>(
-  table: Table<T, string>,
-  rows: T[],
-): Promise<ImportSummary> {
-  const existing = await table.bulkGet(rows.map((r) => r.id));
-  const fresh = rows.filter((r, i) => newer(existing[i], r));
-  await table.bulkPut(fresh);
+async function putNewer<K extends Tbl>(store: Store, table: K, rows: Row<K>[]): Promise<ImportSummary> {
+  const fresh: Row<K>[] = [];
+  for (const row of rows) {
+    // Порівнюємо і з «надгробками»: видалений запис не має воскресати зі старої копії.
+    const existing = await store.get(table, row.id, { includeDeleted: true });
+    if (newer(existing, row)) fresh.push(row);
+  }
+  await store.putKeepingTime(table, fresh);
   return { written: fresh.length, skipped: rows.length - fresh.length };
 }
 
 export async function importBackup(b: Backup): Promise<ImportSummary> {
-  const tables = [db.students, db.timetable, db.holidays, db.lessons, db.lessonObs, db.dayObs, db.settings];
-  return db.transaction('rw', tables, async () => {
+  const store = getStore();
+  return store.tx(async () => {
     // Усі таблиці зливаються за часом зміни: інакше стара копія повертала б
     // старий розклад чи профіль на всіх пристроях.
     const parts = [
-      await putNewer(db.students, b.students),
-      await putNewer(db.timetable, b.timetable),
-      await putNewer(db.holidays, b.holidays),
-      await putNewer(db.lessons, b.lessons),
-      await putNewer(db.lessonObs, b.lessonObs),
-      await putNewer(db.dayObs, b.dayObs),
+      await putNewer(store, 'students', b.students),
+      await putNewer(store, 'timetable', b.timetable),
+      await putNewer(store, 'holidays', b.holidays),
+      await putNewer(store, 'lessons', b.lessons),
+      await putNewer(store, 'lessonObs', b.lessonObs),
+      await putNewer(store, 'dayObs', b.dayObs),
     ];
     const incoming = b.settings[0];
-    if (incoming && newer(await db.settings.get('global'), incoming)) {
-      await db.settings.put(mergeSettings(incoming));
+    if (incoming && newer(await store.get('settings', 'global', { includeDeleted: true }), incoming)) {
+      await store.putKeepingTime('settings', [mergeSettings(incoming)]);
+      parts.push({ written: 1, skipped: 0 });
     }
     return {
-      written: parts.reduce((s, p) => s + p.written, 0),
-      skipped: parts.reduce((s, p) => s + p.skipped, 0),
+      written: parts.reduce((sum, p) => sum + p.written, 0),
+      skipped: parts.reduce((sum, p) => sum + p.skipped, 0),
     };
   });
 }

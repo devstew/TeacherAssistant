@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { FileSpreadsheet } from 'lucide-react';
 import type { WorkBook } from 'xlsx';
 import { useStudent } from '../../state/student';
-import { getLessonsForRange, listSlots, saveStudent } from '../../db/repo';
+import { useQuery, useRepo } from '@journal/core';
+import { getLessonsForRange, listSlots, saveStudent } from '@journal/core';
 import { fmtDate } from '@journal/core';
 import type { Lesson } from '@journal/core';
 import { Badge, Button, Card, Field, Input, Notice, Select } from '../../components/ui';
@@ -190,7 +190,7 @@ function AttendanceImport() {
 
 function TopicsImport() {
   const student = useStudent();
-  const slots = useLiveQuery(() => listSlots(student.id), [student.id]);
+  const slots = useRepo(listSlots, student.id);
   const subjects = [...new Set(slots?.map((s) => s.subject) ?? [])].sort((a, b) => a.localeCompare(b, 'uk'));
   const [parsed, setParsed] = useState<TopicsParseResult | null>(null);
   const [fileName, setFileName] = useState('');
@@ -200,9 +200,10 @@ function TopicsImport() {
   const [done, setDone] = useState<number | null>(null);
   const [error, setError] = useState('');
 
-  const lessons = useLiveQuery(
+  const lessons = useQuery(
     async () => (subject ? (await getLessonsForRange(student, student.yearStart, student.yearEnd)).filter((l) => l.subject === subject) : []),
-    [student, subject],
+    getLessonsForRange.tables,
+    [student.id, subject],
   );
   const plan = useMemo(
     () => (parsed && lessons ? planTopicAssignment(parsed.topics, lessons as Lesson[], mode, startDate) : []),

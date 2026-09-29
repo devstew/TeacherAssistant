@@ -1,6 +1,5 @@
 /** Запис підтверджених даних з Human у локальну базу. */
-import { db } from '../../db/db';
-import { getLessonsForRange } from '../../db/repo';
+import { getLessonsForRange, getStore } from '@journal/core';
 import { lessonId, type Lesson, type Student } from '@journal/core';
 import type { AbsenceRecord } from '@journal/core';
 import type { TopicAssignment } from '@journal/core';
@@ -47,16 +46,20 @@ export async function applyAbsences(student: Student, records: AbsenceRecord[]):
     }
     lessons.forEach(mark);
   }
-  await db.lessons.bulkPut(toPut);
+  await getStore().putMany('lessons', toPut);
   res.marked = toPut.length;
   return res;
 }
 
 export async function applyTopics(assignments: TopicAssignment[]): Promise<number> {
-  const now = new Date().toISOString();
-  const stored = await db.lessons.bulkGet(assignments.map((a) => a.lesson.id));
-  await db.lessons.bulkPut(
-    assignments.map((a, i) => ({ ...a.lesson, ...stored[i], topic: a.topic, updatedAt: now })),
-  );
-  return assignments.length;
+  const store = getStore();
+  return store.tx(async () => {
+    const rows = [];
+    for (const a of assignments) {
+      const stored = await store.get('lessons', a.lesson.id);
+      rows.push({ ...a.lesson, ...stored, topic: a.topic });
+    }
+    await store.putMany('lessons', rows);
+    return assignments.length;
+  });
 }

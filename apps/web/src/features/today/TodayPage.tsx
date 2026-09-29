@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronLeft, ChevronRight, ClipboardList, Plus } from 'lucide-react';
 import { useStudent } from '../../state/student';
 import {
@@ -12,7 +11,8 @@ import {
   listLessonObs,
   listSlots,
   setAbsent,
-} from '../../db/repo';
+} from '@journal/core';
+import { useQuery, useRepo } from '@journal/core';
 import { hasDayData, hasObservationData } from '@journal/core';
 import { lessonTime } from '@journal/core';
 import { addDaysISO, eachDate, fmtDate, isoWeekday, todayISO, weekEndISO, weekStartISO, WEEKDAYS_SHORT } from '@journal/core';
@@ -40,7 +40,7 @@ const DOT: Record<DayStatus, string> = {
 export default function TodayPage() {
   const student = useStudent();
   const [params, setParams] = useSearchParams();
-  const extent = useLiveQuery(() => dataExtent(student.id), [student.id]);
+  const extent = useRepo(dataExtent, student.id);
   const today = todayISO();
   const inYear = today >= student.yearStart && today <= student.yearEnd;
   const date: ISODate | undefined =
@@ -55,7 +55,7 @@ function DayView({ date, onDate, fallback }: { date: ISODate; onDate: (d: ISODat
   const weekStart = weekStartISO(date);
   const weekEnd = weekEndISO(date);
 
-  const week = useLiveQuery(async () => {
+  const week = useQuery(async () => {
     const [lessons, obs, days, slots, holidays] = await Promise.all([
       getLessonsForRange(student, weekStart, weekEnd),
       listLessonObs(student.id, weekStart, weekEnd),
@@ -64,7 +64,7 @@ function DayView({ date, onDate, fallback }: { date: ISODate; onDate: (d: ISODat
       listHolidays(student.id),
     ]);
     return { lessons, obs: new Map(obs.map((o) => [o.id, o])), days, slots, holidays };
-  }, [student, weekStart, weekEnd]);
+  }, ['lessons', 'timetable', 'holidays', 'lessonObs', 'dayObs'], [student.id, weekStart, weekEnd]);
 
   if (!week) return <div className="p-6 text-sm text-slate-500">Завантаження…</div>;
 

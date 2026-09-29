@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { listStudents } from '../db/repo';
+import { useRepo } from '@journal/core';
+import { listStudents } from '@journal/core';
 import type { Student } from '@journal/core';
 
 const KEY = 'aj.currentStudentId';
@@ -22,7 +22,7 @@ interface StudentCtx {
 const Ctx = createContext<StudentCtx>({ students: undefined, student: undefined, setStudentId: () => {} });
 
 export function StudentProvider({ children }: { children: ReactNode }) {
-  const students = useLiveQuery(() => listStudents(), []);
+  const students = useRepo(listStudents);
   const [id, setId] = useState<string | null>(readStored);
   const setStudentId = useCallback((next: string) => {
     setId(next);

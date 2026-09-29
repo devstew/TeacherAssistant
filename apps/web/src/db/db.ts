@@ -24,6 +24,8 @@ export class JournalDB extends Dexie {
   lessonObs!: Table<LessonObservation, string>;
   dayObs!: Table<DayObservation, string>;
   settings!: Table<Settings, string>;
+  /** Службові значення сховища: курсори синхронізації, власник даних. */
+  meta!: Table<{ key: string; value: string }, string>;
 
   constructor(name = 'assistant-journal') {
     super(name);
@@ -51,6 +53,8 @@ export class JournalDB extends Dexie {
             });
         }
       });
+    // Версія 3: службова таблиця для курсорів синхронізації.
+    this.version(3).stores({ ...schema, meta: 'key' });
   }
 }
 

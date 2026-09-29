@@ -1,8 +1,8 @@
 import { lazy, Suspense, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Trash2 } from 'lucide-react';
 import { useStudent } from '../../state/student';
-import { deleteHoliday, listHolidays, listSlots, saveHoliday, saveStudent, setSlotSubject } from '../../db/repo';
+import { useRepo } from '@journal/core';
+import { deleteHoliday, listHolidays, listSlots, saveHoliday, saveStudent, setSlotSubject } from '@journal/core';
 import { fmtDate, minutesBetween, WEEKDAYS_FULL, WEEKDAYS_SHORT } from '@journal/core';
 import { newId, type Bell } from '@journal/core';
 import { Button, Card, Field, Input, Notice, PageTitle, Tabs } from '../../components/ui';
@@ -48,7 +48,7 @@ export default function SchedulePage() {
 
 function WeekGrid() {
   const student = useStudent();
-  const slots = useLiveQuery(() => listSlots(student.id), [student.id]);
+  const slots = useRepo(listSlots, student.id);
   const [saturday, setSaturday] = useState<boolean | null>(null);
   if (!slots) return null;
   const showSat = saturday ?? slots.some((s) => s.weekday === 6);
@@ -161,7 +161,7 @@ function BellsEditor() {
 
 function HolidaysEditor() {
   const student = useStudent();
-  const holidays = useLiveQuery(() => listHolidays(student.id), [student.id]);
+  const holidays = useRepo(listHolidays, student.id);
   const [title, setTitle] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');

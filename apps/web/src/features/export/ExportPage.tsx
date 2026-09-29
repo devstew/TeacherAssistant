@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { FileDown, FileSpreadsheet, FileText, NotebookText } from 'lucide-react';
 import { useStudent } from '../../state/student';
-import { dataExtent, loadDataset } from '../../db/repo';
+import { useRepo } from '@journal/core';
+import { dataExtent, loadDataset } from '@journal/core';
 import { fmtDate, monthEndISO, monthKey, monthStartISO, todayISO } from '@journal/core';
 import type { ISODate } from '@journal/core';
 import { downloadBlob, safeFileName } from '../../export/download';
@@ -25,7 +25,7 @@ const FORMAT_LABEL: Record<Format, string> = { pdf: 'PDF', docx: 'Word (DOCX)', 
 export default function ExportPage() {
   const student = useStudent();
   const [params] = useSearchParams();
-  const extent = useLiveQuery(async () => (await dataExtent(student.id)) ?? null, [student.id]);
+  const extent = useRepo(dataExtent, student.id);
   if (extent === undefined) return <div className="p-6 text-sm text-slate-500">Завантаження…</div>;
   const today = todayISO();
   const lastDay = extent?.to ?? (today <= student.yearEnd ? today : student.yearEnd);

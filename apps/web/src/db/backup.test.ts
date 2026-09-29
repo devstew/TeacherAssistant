@@ -1,14 +1,18 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { db, EPOCH } from './db';
+import { getStore, setStore, Store } from '@journal/core';
+import { JournalDB, EPOCH } from './db';
+import { DexieDriver } from './dexieDriver';
 import { exportBackup, importBackup, parseBackup } from './backup';
-import { getLessonsForRange, listSlots, loadDataset, saveLessonObs, setAbsent, setSlotSubject } from './repo';
+import { getLessonsForRange, listSlots, loadDataset, saveLessonObs, setAbsent, setSlotSubject } from '@journal/core';
 import { DEMO_HISTORY_ID, seedDemo } from '../dev/seed';
 import { applyAbsences } from '../integrations/human/apply';
 import { bucketize } from '@journal/core';
 
+setStore(new Store(new DexieDriver(new JournalDB(`backup-test-${Math.random().toString(36).slice(2)}`))));
+
 async function clearAll() {
-  await Promise.all(db.tables.map((t) => t.clear()));
+  await getStore().clearAll();
 }
 
 describe('резервна копія', () => {
@@ -35,7 +39,7 @@ describe('резервна копія', () => {
     const old = await exportBackup();
     await saveLessonObs(lesson, { checks: ['beh.adequate'], comment: 'новіше' });
     await importBackup(old);
-    expect((await db.lessonObs.get(lesson.id))?.comment).toBe('новіше');
+    expect((await getStore().get('lessonObs', lesson.id))?.comment).toBe('новіше');
   });
 
   it('стара копія не повертає старий розклад (злиття за часом зміни)', async () => {

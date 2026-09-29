@@ -4,7 +4,9 @@ import { join, resolve } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import * as XLSX from 'xlsx';
 import { seedDemo } from '../dev/seed';
-import { loadDataset, type Dataset } from '../db/repo';
+import { loadDataset, setStore, Store, type Dataset } from '@journal/core';
+import { JournalDB } from '../db/db';
+import { DexieDriver } from '../db/dexieDriver';
 import { buildSheetDays } from '@journal/core';
 import { buildReport } from '@journal/core';
 import { registerFonts } from './pdf/kit';
@@ -14,6 +16,8 @@ import { rawDataXlsx } from './xlsx/rawDataXlsx';
 
 /** EXPORT_OUT=<тека> — зберегти згенеровані файли для ручного перегляду. */
 const OUT = process.env.EXPORT_OUT;
+
+setStore(new Store(new DexieDriver(new JournalDB(`export-test-${Math.random().toString(36).slice(2)}`))));
 
 async function bytes(blob: Blob, name: string): Promise<Buffer> {
   const buf = Buffer.from(await blob.arrayBuffer());

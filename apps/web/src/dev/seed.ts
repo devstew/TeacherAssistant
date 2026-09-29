@@ -7,8 +7,7 @@
  *    листопаді (для дашборду, порівняння місяців і звітів).
  * Генератор детермінований: демо щоразу однакове.
  */
-import { db } from '../db/db';
-import { deleteStudent } from '../db/repo';
+import { getStore, deleteStudent } from '@journal/core';
 import { generateLessons } from '@journal/core';
 import {
   ADAPTATION_IDS,
@@ -383,14 +382,16 @@ export interface DemoStudents {
 export async function seedDemo(): Promise<DemoStudents> {
   const data = [buildProfile(currentProfile()), buildProfile(historyProfile())];
   await removeDemo();
-  await db.transaction('rw', [db.students, db.timetable, db.holidays, db.lessons, db.lessonObs, db.dayObs], async () => {
+  const store = getStore();
+  // Одна транзакція: екрани перемальовуються один раз, а не після кожної таблиці.
+  await store.tx(async () => {
     for (const d of data) {
-      await db.students.put(d.student);
-      await db.timetable.bulkPut(d.slots);
-      await db.holidays.bulkPut(d.holidays);
-      await db.lessons.bulkPut(d.lessons);
-      await db.lessonObs.bulkPut(d.lessonObs);
-      await db.dayObs.bulkPut(d.dayObs);
+      await store.putKeepingTime('students', [d.student]);
+      await store.putKeepingTime('timetable', d.slots);
+      await store.putKeepingTime('holidays', d.holidays);
+      await store.putKeepingTime('lessons', d.lessons);
+      await store.putKeepingTime('lessonObs', d.lessonObs);
+      await store.putKeepingTime('dayObs', d.dayObs);
     }
   });
   return { current: data[0].student, history: data[1].student };

@@ -1,6 +1,6 @@
 /** Сирі дані в Excel: уроки, дні, показники по місяцях і частоти пунктів — для власного аналізу. */
 import * as XLSX from 'xlsx';
-import type { Dataset } from '../../db/repo';
+import type { Dataset } from '@journal/core';
 import { analyze } from '@journal/core';
 import { METRIC_LABELS } from '@journal/core';
 import { ALL_ITEMS, HELP_LABEL, LESSON_CATEGORIES, SOCIAL } from '@journal/core';

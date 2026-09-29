@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Download, Upload } from 'lucide-react';
 import { useStudents } from '../../state/student';
-import { deleteStudent, getSettings, newStudent, saveSettings, saveStudent } from '../../db/repo';
+import { useRepo } from '@journal/core';
+import { deleteStudent, getSettings, newStudent, saveSettings, saveStudent } from '@journal/core';
 import { exportBackup, importBackup, parseBackup } from '../../db/backup';
 import { DEMO_ENABLED, DEMO_IDS, removeDemo, seedDemo } from '../../dev/seed';
 import { CATEGORIES, HELP_LEVELS, type Polarity } from '@journal/core';
@@ -93,7 +93,7 @@ const POLARITY_OPTIONS: { v: Polarity; label: string }[] = [
 ];
 
 function ScoringTab() {
-  const settings = useLiveQuery(() => getSettings(), []);
+  const settings = useRepo(getSettings);
   if (!settings) return null;
   const update = (next: Partial<Settings>) => saveSettings({ ...settings, ...next });
   const setOverride = (id: string, patch: { polarity?: Polarity; weight?: number }, def: { polarity: Polarity; weight: number }) => {

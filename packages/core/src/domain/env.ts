@@ -20,9 +20,21 @@ function randomUuid(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+/**
+ * Час завжди зростає. Два записи в одну мілісекунду дали б однакову позначку,
+ * і правило «перемагає новіший» не змогло б їх розрізнити — а саме так
+ * виглядають швидкі натискання позначок на уроці.
+ */
+let lastNow = '';
+function monotonicNow(): string {
+  const iso = new Date().toISOString();
+  lastNow = iso > lastNow ? iso : new Date(Date.parse(lastNow) + 1).toISOString();
+  return lastNow;
+}
+
 let env: Env = {
   newId: randomUuid,
-  now: () => new Date().toISOString(),
+  now: monotonicNow,
 };
 
 /** Підміняє реалізації (мобільний застосунок, тести). */
