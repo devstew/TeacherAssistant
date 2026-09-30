@@ -50,6 +50,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "657d4585-c312-4948-962e-eb8dfc14852f"
+      }
+    },
+    "owner": "devstew"
   }
 }
