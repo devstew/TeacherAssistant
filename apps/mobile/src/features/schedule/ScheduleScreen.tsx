@@ -21,7 +21,7 @@ import {
 import { Button, Card, Field, Input, Notice, PageTitle, Segmented, Select, Tabs } from '@/components/ui';
 import { DateField, TimeField } from '@/components/fields';
 import { Screen } from '@/components/Screen';
-import { Soon } from '@/features/Soon';
+import { HumanImportSection } from './HumanImportSection';
 import { useStudents } from '@/state/student';
 import { font, sp, useTheme } from '@/theme';
 
@@ -48,11 +48,7 @@ export function ScheduleScreen() {
       {tab === 'week' && <WeekGrid student={student} />}
       {tab === 'bells' && <BellsEditor student={student} />}
       {tab === 'holidays' && <HolidaysEditor student={student} />}
-      {tab === 'human' && (
-        <Card title="Імпорт з Human">
-          <Soon what="Завантаження файлів відвідуваності й тем уроків із журналу Human просто з телефона." />
-        </Card>
-      )}
+      {tab === 'human' && <HumanImportSection student={student} />}
     </Screen>
   );
 }

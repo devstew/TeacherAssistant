@@ -8,9 +8,9 @@ import type {
   Student,
   TimetableSlot,
 } from '@journal/core';
+import { EPOCH } from '@journal/core';
 
-/** Час для записів, створених до появи синхронізації: вони програють будь-якій правці. */
-export const EPOCH = '1970-01-01T00:00:00.000Z';
+export { EPOCH };
 
 /**
  * Локальна база в IndexedDB — головне сховище застосунку: він повністю працює без мережі.

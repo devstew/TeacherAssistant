@@ -2,8 +2,8 @@ import { useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { useStudents } from '../../state/student';
 import { useRepo } from '@journal/core';
-import { deleteStudent, getSettings, newStudent, saveSettings, saveStudent } from '@journal/core';
-import { exportBackup, importBackup, parseBackup } from '../../db/backup';
+import { deleteStudent, exportBackup, getSettings, importBackup, newStudent, parseBackup, saveSettings, saveStudent } from '@journal/core';
+
 import { DEMO_ENABLED, DEMO_IDS, removeDemo, seedDemo } from '../../dev/seed';
 import { CATEGORIES, HELP_LEVELS, type Polarity } from '@journal/core';
 import { DEFAULT_SETTINGS, type Settings } from '@journal/core';

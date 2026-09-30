@@ -3,7 +3,7 @@ import { Alert, Text, View } from 'react-native';
 import { DEMO_IDS, deleteStudent, newStudent, removeDemo, saveStudent, seedDemo } from '@journal/core';
 import { Button, Card, PageTitle, Select, Tabs } from '@/components/ui';
 import { Screen } from '@/components/Screen';
-import { Soon } from '@/features/Soon';
+import { BackupSection } from './BackupSection';
 import { ScoringSection } from './ScoringSection';
 import { StudentForm } from './StudentForm';
 import { SyncSection } from './SyncSection';
@@ -105,9 +105,7 @@ function DataSection() {
 
   return (
     <View style={{ gap: sp.lg }}>
-      <Card title="Резервна копія">
-        <Soon what="Збереження журналу у файл JSON і відновлення з нього через системне «Поділитися»." />
-      </Card>
+      <BackupSection />
 
       {(DEMO_ENABLED || hasDemo) && (
         <Card title="Демо-дані">

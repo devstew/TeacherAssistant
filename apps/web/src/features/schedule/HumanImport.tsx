@@ -9,7 +9,7 @@ import type { Lesson } from '@journal/core';
 import { Badge, Button, Card, Field, Input, Notice, Select } from '../../components/ui';
 import { parseAttendanceWorkbook, readWorkbook, type AttendanceParseResult } from '@journal/core';
 import { parseTopicsWorkbook, planTopicAssignment, type TopicsParseResult } from '@journal/core';
-import { applyAbsences, applyTopics, type AbsenceApplyResult } from '../../integrations/human/apply';
+import { applyAbsences, applyTopics, type AbsenceApplyResult } from '@journal/core';
 
 export default function HumanImport() {
   return (

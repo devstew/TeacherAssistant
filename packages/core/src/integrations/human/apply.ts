@@ -1,8 +1,9 @@
 /** Запис підтверджених даних з Human у локальну базу. */
-import { getLessonsForRange, getStore } from '@journal/core';
-import { lessonId, type Lesson, type Student } from '@journal/core';
-import type { AbsenceRecord } from '@journal/core';
-import type { TopicAssignment } from '@journal/core';
+import { getStore } from '../../store/context';
+import { getLessonsForRange } from '../../store/repo';
+import { lessonId, type Lesson, type Student } from '../../domain/types';
+import type { AbsenceRecord } from './provider';
+import type { TopicAssignment } from './fileImport/topicsXlsx';
 
 export interface AbsenceApplyResult {
   /** Скільки уроків позначено «н». */

@@ -1,12 +1,12 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getStore, setStore, Store } from '@journal/core';
-import { JournalDB, EPOCH } from './db';
+import { EPOCH, getStore, setStore, Store } from '@journal/core';
+import { JournalDB } from './db';
 import { DexieDriver } from './dexieDriver';
-import { exportBackup, importBackup, parseBackup } from './backup';
+import { exportBackup, importBackup, parseBackup } from '@journal/core';
 import { getLessonsForRange, listSlots, loadDataset, saveLessonObs, setAbsent, setSlotSubject } from '@journal/core';
-import { DEMO_HISTORY_ID, seedDemo } from '../dev/seed';
-import { applyAbsences } from '../integrations/human/apply';
+import { DEMO_HISTORY_ID, seedDemo } from '@journal/core';
+import { applyAbsences } from '@journal/core';
 import { bucketize } from '@journal/core';
 
 setStore(new Store(new DexieDriver(new JournalDB(`backup-test-${Math.random().toString(36).slice(2)}`))));

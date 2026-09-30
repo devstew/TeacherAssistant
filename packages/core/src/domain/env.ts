@@ -3,6 +3,9 @@
  * звертатися до них напряму — у React Native (Hermes) немає `crypto.randomUUID`,
  * а тестам потрібен передбачуваний час.
  */
+/** Час для записів, створених до появи синхронізації: вони програють будь-якій правці. */
+export const EPOCH = '1970-01-01T00:00:00.000Z';
+
 export interface Env {
   newId(): string;
   now(): string;

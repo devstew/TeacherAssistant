@@ -3,8 +3,11 @@
  * При злитті спостережень і уроків перемагає новіший запис (updatedAt).
  */
 import { z } from 'zod';
-import { getStore, mergeSettings, type Row, type Store, type Tbl } from '@journal/core';
-import { EPOCH } from './db';
+import { EPOCH } from '../domain/env';
+import { getStore } from './context';
+import type { Store } from './port';
+import { mergeSettings } from './repo';
+import type { Row, Tbl } from './tables';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'дата має бути у форматі YYYY-MM-DD');
 const helpLevel = z.enum(['none', 'periodic', 'partial', 'full']);
