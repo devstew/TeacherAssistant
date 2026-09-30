@@ -39,7 +39,8 @@
     "typecheck": "tsc --noEmit",
     "web": "expo start --web",
     "web:preview": "node scripts/web-preview.mjs",
-    "export": "expo export --platform ios"
+    "export": "expo export --platform ios",
+    "tunnel": "expo start --tunnel"
   },
   "private": true,
   "description": "Журнал спостережень асистента вчителя — мобільний застосунок",

@@ -17,6 +17,9 @@
       },
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_ENABLE_DEMO": "1"
       }
     },
     "production": {

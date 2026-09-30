@@ -16,7 +16,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "demo:files": "npm run demo:files -w @journal/web",
     "mobile": "npm start -w @journal/mobile",
-    "mobile:web": "npm run web:preview -w @journal/mobile"
+    "mobile:web": "npm run web:preview -w @journal/mobile",
+    "mobile:tunnel": "npm run tunnel -w @journal/mobile"
   },
   "engines": {
     "node": ">=20"
