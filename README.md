@@ -96,6 +96,12 @@ npm run mobile            # Expo: QR для Expo Go, клавіші i / a для
 npm run typecheck         # усі три пакети
 ```
 
+Збірки для телефона робить EAS — покрокові команди в [apps/mobile/BUILD.md](apps/mobile/BUILD.md),
+матеріали для магазинів — у [apps/mobile/STORE.md](apps/mobile/STORE.md), політика приватності —
+[PRIVACY.md](PRIVACY.md). Найшвидший спосіб потримати застосунок у руках:
+`eas build --platform android --profile preview` дає APK, який ставиться за посиланням,
+і для цього не потрібен обліковий запис Google Play.
+
 Стан: працює весь щоденний сценарій — Сьогодні, бланк уроку, підсумок дня, розклад
 (тиждень, дзвінки, канікули, імпорт файлів Human), дашборд і експорт. Адаптер SQLite
 проходить той самий набір перевірок, що й Dexie у вебі.

@@ -13,8 +13,6 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-// Інакше Metro підіймається вище кореня репозиторію й може взяти чужу копію React.
-config.resolver.disableHierarchicalLookup = true;
 // Веб-версія SQLite (лише для перегляду в браузері) тягне .wasm як ресурс.
 config.resolver.assetExts = [...config.resolver.assetExts, 'wasm'];
 

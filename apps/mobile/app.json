@@ -7,24 +7,46 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "primaryColor": "#0f766e",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ua.teacherassistant.journal"
+      "bundleIdentifier": "ua.teacherassistant.journal",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleLocalizations": [
+          "uk",
+          "en"
+        ],
+        "CFBundleDevelopmentRegion": "uk"
+      }
     },
     "android": {
       "package": "ua.teacherassistant.journal",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0f766e",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": []
     },
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-sharing"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0f766e",
+          "dark": {
+            "backgroundColor": "#134e4a"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
