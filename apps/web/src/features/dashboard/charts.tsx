@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { endLabelFlags } from '@journal/core';
 import { VIZ_VARS, type VizColors } from './vizTheme';
 
 const r = (v: number | null | undefined) => (v == null ? '—' : String(Math.round(v)));
@@ -116,15 +117,12 @@ export function TrendChart({
     for (let i = rows.length - 1; i >= 0; i--) if (rows[i][key] != null) return i;
     return -1;
   };
-  // Підписи на кінцях ліній: якщо значення майже збігаються — підписуємо одне (рівні)
-  // або жодного (близькі), щоб цифри не накладалися; значення є в підказці й таблиці.
-  const ends = series.map((s) => {
-    const i = lastIdx(s.key);
-    return i < 0 ? null : Math.round(rows[i][s.key] as number);
-  });
-  const labelled = series.map((_, i) =>
-    ends[i] != null &&
-    ends.every((e, j) => j === i || e == null || Math.abs(e - ends[i]!) >= 6 || (e === ends[i] && j > i)),
+  // Правило «що підписувати на кінцях» спільне з мобільним застосунком.
+  const labelled = endLabelFlags(
+    series.map((s) => {
+      const i = lastIdx(s.key);
+      return i < 0 ? null : (rows[i][s.key] as number);
+    }),
   );
   return (
     <Frame width={width} height={height}>

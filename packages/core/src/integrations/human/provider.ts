@@ -3,6 +3,7 @@
  * з Excel-файлів, які вчитель вивантажує з Human. Інтерфейс спільний: коли
  * з'явиться офіційний доступ, достатньо реалізувати ApiProvider.
  */
+import type { DateRange } from '../../domain/periods';
 import type { ISODate } from '../../domain/types';
 
 export interface AbsenceRecord {
@@ -24,11 +25,6 @@ export interface ScheduleRecord {
   weekday: number;
   lessonNumber: number;
   subject: string;
-}
-
-export interface DateRange {
-  from: ISODate;
-  to: ISODate;
 }
 
 export interface HumanDataProvider {

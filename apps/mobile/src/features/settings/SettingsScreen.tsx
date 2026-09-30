@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Text, View } from 'react-native';
-import { deleteStudent, newStudent, saveStudent } from '@journal/core';
+import { DEMO_IDS, deleteStudent, newStudent, removeDemo, saveStudent, seedDemo } from '@journal/core';
 import { Button, Card, PageTitle, Select, Tabs } from '@/components/ui';
 import { Screen } from '@/components/Screen';
 import { Soon } from '@/features/Soon';
@@ -94,13 +94,56 @@ function ProfileSection() {
   );
 }
 
+/** Демо вмикається лише в збірці для розробки: EXPO_PUBLIC_ENABLE_DEMO=1. */
+const DEMO_ENABLED = process.env.EXPO_PUBLIC_ENABLE_DEMO === '1';
+
 function DataSection() {
   const t = useTheme();
+  const { students, setStudentId } = useStudents();
+  const [busy, setBusy] = useState(false);
+  const hasDemo = students?.some((s) => DEMO_IDS.includes(s.id));
+
   return (
     <View style={{ gap: sp.lg }}>
       <Card title="Резервна копія">
         <Soon what="Збереження журналу у файл JSON і відновлення з нього через системне «Поділитися»." />
       </Card>
+
+      {(DEMO_ENABLED || hasDemo) && (
+        <Card title="Демо-дані">
+          <View style={{ gap: sp.md }}>
+            <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
+              Два профілі: поточний навчальний рік і торішня історія вересень–листопад — щоб подивитися дашборд і
+              порівняння місяців.
+            </Text>
+            {DEMO_ENABLED && (
+              <Button
+                disabled={busy}
+                onPress={async () => {
+                  setBusy(true);
+                  const { current } = await seedDemo();
+                  setStudentId(current.id);
+                  setBusy(false);
+                }}
+              >
+                {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+              </Button>
+            )}
+            {hasDemo && (
+              <Button
+                variant="danger"
+                onPress={async () => {
+                  const other = students?.find((s) => !DEMO_IDS.includes(s.id));
+                  await removeDemo();
+                  if (other) setStudentId(other.id);
+                }}
+              >
+                Видалити демо
+              </Button>
+            )}
+          </View>
+        </Card>
+      )}
 
       <Card title="Про дані">
         <View style={{ gap: sp.sm }}>

@@ -9,53 +9,12 @@ import { METRIC_LABELS, delta, type Bucket, type Grouping, type MetricId } from 
 import { fmtDelta, type Insight } from '@journal/core';
 import { CATEGORIES, HELP_LEVELS } from '@journal/core';
 import { MONTHS_INS, MONTHS_SHORT, fmtDate, monthIndex, todayISO } from '@journal/core';
+import { PRESETS, rangeDays, resolveRange, type Preset } from '@journal/core';
 import type { ISODate, Student } from '@journal/core';
 import { Button, Card, Field, Input, Notice, PageTitle, Segmented, Select, cx } from '../../components/ui';
 import { ColumnChart, HBarChart, Legend, Sparkline, StackChart, TrendChart, type SeriesDef } from './charts';
 import { ItemHeatmap } from './ItemHeatmap';
 import { VIZ_VARS } from './vizTheme';
-
-export type Preset = 'all' | 'year' | 'sem1' | 'sem2' | 'last90' | 'custom';
-
-const PRESETS: { id: Preset; label: string }[] = [
-  { id: 'all', label: 'Увесь час (з даними)' },
-  { id: 'year', label: 'Навчальний рік' },
-  { id: 'sem1', label: 'I семестр' },
-  { id: 'sem2', label: 'II семестр' },
-  { id: 'last90', label: 'Останні 90 днів' },
-  { id: 'custom', label: 'Свій період' },
-];
-
-const rangeDays = (r: { from: ISODate; to: ISODate }) =>
-  Math.round((Date.parse(r.to) - Date.parse(r.from)) / 86400000);
-
-export function resolveRange(
-  preset: Preset,
-  student: Student,
-  extent: { from: ISODate; to: ISODate } | null,
-  custom: { from: ISODate; to: ISODate },
-): { from: ISODate; to: ISODate } {
-  const today = todayISO();
-  const clampTo = (d: ISODate) => (d > today ? today : d);
-  const y = Number(student.yearStart.slice(0, 4));
-  switch (preset) {
-    case 'all':
-      return extent ?? { from: student.yearStart, to: clampTo(student.yearEnd) };
-    case 'year':
-      return { from: student.yearStart, to: clampTo(student.yearEnd) };
-    case 'sem1':
-      return { from: student.yearStart, to: clampTo(`${y}-12-31`) };
-    case 'sem2':
-      return { from: `${y + 1}-01-01`, to: clampTo(student.yearEnd) };
-    case 'last90': {
-      const d = new Date();
-      d.setDate(d.getDate() - 90);
-      return { from: d.toISOString().slice(0, 10), to: today };
-    }
-    case 'custom':
-      return custom;
-  }
-}
 
 export default function DashboardPage() {
   const student = useStudent();
