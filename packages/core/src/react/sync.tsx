@@ -21,6 +21,7 @@ import { onChanged } from '../store/events';
 import { adoptLocalData, checkAccount, resetForOwner } from '../sync/account';
 import { SyncEngine } from '../sync/engine';
 import { friendlyError } from '../sync/errors';
+import { parseSignInInput } from '../sync/signInInput';
 import { supabaseBackend } from '../sync/supabase';
 import type { SyncStatus } from '../sync/types';
 
@@ -137,10 +138,14 @@ export function SyncProvider({
   );
 
   const verify = useCallback(
-    async (code: string) => {
+    async (input: string) => {
       if (!client || !codeSentTo) return;
+      const parsed = parseSignInInput(input);
+      if (!parsed) throw new Error('Вставте код або посилання з листа.');
       const { error } = await failsafe(
-        client.auth.verifyOtp({ email: codeSentTo, token: code.trim(), type: 'email' }),
+        parsed.kind === 'code'
+          ? client.auth.verifyOtp({ email: codeSentTo, token: parsed.code, type: 'email' })
+          : client.auth.verifyOtp({ token_hash: parsed.tokenHash, type: 'email' }),
       );
       if (error) throw new Error(friendlyError(error.message));
       setCodeSentTo(undefined);

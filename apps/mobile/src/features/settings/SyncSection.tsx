@@ -117,13 +117,14 @@ function SignIn({
 
         {codeSentTo ? (
           <>
-            <Field label={`Код з листа на ${codeSentTo}`}>
+            <Field label={`Лист на ${codeSentTo}`} hint="Код із листа, а якщо його немає — посилання «Log In».">
               <Input
                 value={code}
                 onChangeText={setCode}
-                keyboardType="number-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
                 textContentType="oneTimeCode"
-                placeholder="123456"
+                placeholder="123456 або посилання"
               />
             </Field>
             <Button variant="primary" disabled={busy} onPress={() => void run(() => onVerify(code))}>

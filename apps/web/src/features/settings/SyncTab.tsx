@@ -112,13 +112,16 @@ function SignIn({
       <form className="space-y-3" onSubmit={submit}>
         {codeSentTo ? (
           <>
-            <Field label={`Код з листа на ${codeSentTo}`}>
+            <Field
+              label={`Лист на ${codeSentTo}`}
+              hint="Вставте код із листа, а якщо коду немає — саме посилання «Log In»."
+            >
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                placeholder="123456"
+                placeholder="123456 або посилання з листа"
                 required
               />
             </Field>
