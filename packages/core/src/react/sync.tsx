@@ -139,12 +139,15 @@ export function SyncProvider({
 
   const verify = useCallback(
     async (input: string) => {
-      if (!client || !codeSentTo) return;
+      if (!client) return;
       const parsed = parseSignInInput(input);
       if (!parsed) throw new Error('Вставте код або посилання з листа.');
+      // Код прив'язаний до адреси, посилання — самодостатнє: ним можна увійти
+      // й тоді, коли лист прийшов на іншому пристрої, а запит робили не тут.
+      if (parsed.kind === 'code' && !codeSentTo) throw new Error('Спершу надішліть код на пошту.');
       const { error } = await failsafe(
         parsed.kind === 'code'
-          ? client.auth.verifyOtp({ email: codeSentTo, token: parsed.code, type: 'email' })
+          ? client.auth.verifyOtp({ email: codeSentTo!, token: parsed.code, type: 'email' })
           : client.auth.verifyOtp({ token_hash: parsed.tokenHash, type: 'email' }),
       );
       if (error) throw new Error(friendlyError(error.message));

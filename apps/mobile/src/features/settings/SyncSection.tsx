@@ -94,6 +94,7 @@ function SignIn({
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [haveLink, setHaveLink] = useState(false);
   const [error, setError] = useState<string>();
 
   const run = async (fn: () => Promise<void>) => {
@@ -115,9 +116,12 @@ function SignIn({
           Увійдіть, щоб журнал був і на телефоні, і на комп’ютері. Записи зберігаються в захищеній базі: їх бачите лише ви.
         </Text>
 
-        {codeSentTo ? (
+        {codeSentTo || haveLink ? (
           <>
-            <Field label={`Лист на ${codeSentTo}`} hint="Код із листа, а якщо його немає — посилання «Log In».">
+            <Field
+              label={codeSentTo ? `Лист на ${codeSentTo}` : 'Код або посилання з листа'}
+              hint="Якщо коду в листі немає — вставте саме посилання «Log In»."
+            >
               <Input
                 value={code}
                 onChangeText={setCode}
@@ -130,9 +134,11 @@ function SignIn({
             <Button variant="primary" disabled={busy} onPress={() => void run(() => onVerify(code))}>
               Увійти
             </Button>
-            <Button variant="ghost" disabled={busy} onPress={() => void run(() => onSignIn(codeSentTo))}>
-              Надіслати код ще раз
-            </Button>
+            {codeSentTo && (
+              <Button variant="ghost" disabled={busy} onPress={() => void run(() => onSignIn(codeSentTo))}>
+                Надіслати код ще раз
+              </Button>
+            )}
           </>
         ) : (
           <>
@@ -148,6 +154,9 @@ function SignIn({
             </Field>
             <Button variant="primary" disabled={busy || !email.trim()} onPress={() => void run(() => onSignIn(email.trim()))}>
               Надіслати код
+            </Button>
+            <Button variant="ghost" onPress={() => setHaveLink(true)}>
+              У мене вже є код або посилання
             </Button>
           </>
         )}

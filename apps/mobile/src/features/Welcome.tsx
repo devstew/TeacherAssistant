@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { newStudent, saveStudent } from '@journal/core';
 import { Button, Card, Field, Input, PageTitle } from '@/components/ui';
 import { Screen } from '@/components/Screen';
+import { SyncSection } from '@/features/settings/SyncSection';
 import { font, sp, useTheme } from '@/theme';
 
 /** Перший запуск: без дитини журнал не має про кого вести записи. */
@@ -12,6 +13,20 @@ export function Welcome() {
   const [className, setClassName] = useState('');
   const [assistantName, setAssistantName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [signIn, setSignIn] = useState(false);
+
+  // На новому телефоні журнал уже може лежати в акаунті — тоді створювати
+  // дитину наново не треба, її принесе синхронізація.
+  if (signIn)
+    return (
+      <Screen>
+        <PageTitle title="Вхід в акаунт" subtitle="Журнал завантажиться з вашого облікового запису." />
+        <SyncSection />
+        <Button variant="ghost" onPress={() => setSignIn(false)}>
+          Назад
+        </Button>
+      </Screen>
+    );
 
   return (
     <Screen>
@@ -42,8 +57,11 @@ export function Welcome() {
           </Button>
         </View>
       </Card>
+      <Button variant="ghost" onPress={() => setSignIn(true)}>
+        У мене вже є журнал в акаунті
+      </Button>
       <Text style={{ color: t.muted, fontSize: font.xs }}>
-        Дані зберігаються на цьому телефоні й нікуди не надсилаються, поки ви не увійдете в акаунт у налаштуваннях.
+        Дані зберігаються на цьому телефоні й нікуди не надсилаються, поки ви не увійдете в акаунт.
       </Text>
     </Screen>
   );

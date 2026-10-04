@@ -84,6 +84,7 @@ function SignIn({
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [haveLink, setHaveLink] = useState(false);
   const [error, setError] = useState<string>();
 
   const run = async (fn: () => Promise<void>) => {
@@ -110,16 +111,15 @@ function SignIn({
         Без входу застосунок працює як раніше — тільки на цьому пристрої.
       </p>
       <form className="space-y-3" onSubmit={submit}>
-        {codeSentTo ? (
+        {codeSentTo || haveLink ? (
           <>
             <Field
-              label={`Лист на ${codeSentTo}`}
-              hint="Вставте код із листа, а якщо коду немає — саме посилання «Log In»."
+              label={codeSentTo ? `Лист на ${codeSentTo}` : 'Код або посилання з листа'}
+              hint="Якщо коду в листі немає — вставте саме посилання «Log In»."
             >
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                inputMode="numeric"
                 autoComplete="one-time-code"
                 placeholder="123456 або посилання з листа"
                 required
@@ -129,9 +129,11 @@ function SignIn({
               <Button type="submit" disabled={busy}>
                 Увійти
               </Button>
-              <Button type="button" variant="ghost" disabled={busy} onClick={() => void run(() => onSignIn(codeSentTo))}>
-                Надіслати код ще раз
-              </Button>
+              {codeSentTo && (
+                <Button type="button" variant="ghost" disabled={busy} onClick={() => void run(() => onSignIn(codeSentTo))}>
+                  Надіслати код ще раз
+                </Button>
+              )}
             </div>
           </>
         ) : (
@@ -146,9 +148,14 @@ function SignIn({
                 required
               />
             </Field>
-            <Button type="submit" disabled={busy}>
-              Надіслати код
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={busy}>
+                Надіслати код
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setHaveLink(true)}>
+                У мене вже є код або посилання
+              </Button>
+            </div>
           </>
         )}
       </form>

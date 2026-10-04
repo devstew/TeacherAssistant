@@ -5,11 +5,13 @@ import { DEMO_ENABLED, seedDemo } from '../../dev/seed';
 import { useStudents } from '../../state/student';
 import { Button, Card } from '../../components/ui';
 import { StudentForm } from './StudentForm';
+import { SyncTab } from './SyncTab';
 
 export default function Welcome() {
   const { setStudentId } = useStudents();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [signIn, setSignIn] = useState(false);
   return (
     <div className="mx-auto max-w-2xl space-y-4 px-4 py-8">
       <div className="flex items-center gap-3">
@@ -32,6 +34,21 @@ export default function Welcome() {
           }}
         />
       </Card>
+
+      {/* На новому пристрої журнал може вже лежати в акаунті — тоді дитину
+          створювати не треба, її принесе синхронізація. */}
+      {signIn ? (
+        <>
+          <SyncTab />
+          <Button variant="ghost" onClick={() => setSignIn(false)}>
+            Назад
+          </Button>
+        </>
+      ) : (
+        <Button variant="ghost" onClick={() => setSignIn(true)}>
+          У мене вже є журнал в акаунті
+        </Button>
+      )}
 
       {DEMO_ENABLED && (
       <Card title="Або подивіться на прикладі">
