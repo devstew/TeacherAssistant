@@ -10,6 +10,7 @@ import { DEFAULT_SETTINGS, type Settings } from '@journal/core';
 import { todayISO } from '@journal/core';
 import { downloadBlob } from '../../export/download';
 import { Button, Card, Field, Input, Notice, PageTitle, Select, Tabs } from '../../components/ui';
+import { InstallCard } from '../../pwa/InstallPrompt';
 import { StudentForm } from './StudentForm';
 import { SyncTab } from './SyncTab';
 import { useSync } from '../../sync/SyncProvider';
@@ -261,6 +262,8 @@ function DataTab() {
 
   return (
     <div className="space-y-4">
+      {/* Пропозиція зі смужки закривається на тиждень — тут вона лишається завжди. */}
+      <InstallCard />
       <Card title="Резервна копія">
         <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
           {sync.email

@@ -4,6 +4,7 @@ import { newStudent, saveStudent } from '@journal/core';
 import { DEMO_ENABLED, seedDemo } from '../../dev/seed';
 import { useStudents } from '../../state/student';
 import { Button, Card } from '../../components/ui';
+import { InstallCard } from '../../pwa/InstallPrompt';
 import { StudentForm } from './StudentForm';
 import { SyncTab } from './SyncTab';
 
@@ -34,6 +35,8 @@ export default function Welcome() {
           }}
         />
       </Card>
+
+      <InstallCard />
 
       {/* На новому пристрої журнал може вже лежати в акаунті — тоді дитину
           створювати не треба, її принесе синхронізація. */}

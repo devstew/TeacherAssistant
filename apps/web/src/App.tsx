@@ -9,6 +9,7 @@ import DayPage from './features/observe/DayPage';
 import SchedulePage from './features/schedule/SchedulePage';
 import SettingsPage from './features/settings/SettingsPage';
 import Welcome from './features/settings/Welcome';
+import { InstallBanner } from './pwa/InstallPrompt';
 
 // Дашборд і експорт тягнуть важкі бібліотеки — вантажимо їх окремо.
 const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
@@ -67,6 +68,7 @@ export default function App() {
       </header>
 
       <main className="pb-nav mx-auto max-w-6xl px-4 pt-4">
+        <InstallBanner />
         <Suspense fallback={<div className="p-6 text-sm text-slate-500">Завантаження…</div>}>
           <Routes>
             <Route path="/" element={<TodayPage key={student.id} />} />
