@@ -38,12 +38,23 @@ npm run mobile          # Expo Go: QR для телефона, i / a для си
 
 ## Змінні збірки
 
-Ключі Supabase беруться з `.env.local` (див. `.env.example`) або з секретів EAS:
+Локально ключі Supabase беруться з `.env.local` (див. `.env.example`). Цього файлу
+немає в репозиторії, тож хмарна збірка його не бачить — для неї ключі зберігаються
+окремо, в оточеннях EAS:
 
 ```bash
-eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value https://…
-eas secret:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value …
+eas env:set --name EXPO_PUBLIC_SUPABASE_URL --value https://… \
+  --environment preview --environment production --visibility plaintext --scope project
+eas env:set --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value … \
+  --environment preview --environment production --visibility plaintext --scope project
+eas env:list preview        # перевірити, що обидві на місці
 ```
+
+Профіль `preview` в `eas.json` не оголошує поле `environment`, але змінні оточення
+`preview` до збірки все одно потрапляють — перевірено на APK збірки
+`6ed3d9bb`: адреса проєкту й анонімний ключ лежать у `assets/index.android.bundle`.
+Якщо ключів не додати, застосунок збереться й працюватиме, але вкладка синхронізації
+скаже, що вона вимкнена.
 
 Сюди йде лише анонімний ключ: він розрахований на те, щоб лежати в застосунку,
 а доступ до чужих даних закриває RLS на сервері.
