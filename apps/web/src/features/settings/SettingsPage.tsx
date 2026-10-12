@@ -4,8 +4,7 @@ import { useStudents } from '../../state/student';
 import { useRepo } from '@journal/core';
 import { deleteStudent, exportBackup, getSettings, importBackup, newStudent, parseBackup, saveSettings, saveStudent } from '@journal/core';
 
-import { DEMO_ENABLED, DEMO_IDS, removeDemo, seedDemo } from '../../dev/seed';
-import { CATEGORIES, HELP_LEVELS, type Polarity } from '@journal/core';
+import { CATEGORIES, DEMO_IDS, HELP_LEVELS, removeDemo, seedDemo, type Polarity } from '@journal/core';
 import { DEFAULT_SETTINGS, type Settings } from '@journal/core';
 import { todayISO } from '@journal/core';
 import { downloadBlob } from '../../export/download';
@@ -306,26 +305,24 @@ function DataTab() {
         )}
       </Card>
 
-      {(DEMO_ENABLED || hasDemo) && (
       <Card title="Демо-дані">
         <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
-          Два профілі: поточний навчальний рік (уроки до сьогодні, останній день заповнений частково) і торішня історія
-          вересень–листопад — щоб подивитися дашборд, порівняння місяців і експорт.
+          Два вигаданих профілі, на яких можна спробувати застосунок, не чіпаючи справжніх записів: дитина цього
+          навчального року (уроки до сьогодні, останній день заповнений частково) і торішній I семестр повністю —
+          вересень–грудень, щоб подивитися дашборд, порівняння місяців і експорт.
         </p>
         <div className="flex flex-wrap gap-2">
-          {DEMO_ENABLED && (
-            <Button
-              disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                const { current } = await seedDemo();
-                setStudentId(current.id);
-                setBusy(false);
-              }}
-            >
-              {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
-            </Button>
-          )}
+          <Button
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              const { current } = await seedDemo();
+              setStudentId(current.id);
+              setBusy(false);
+            }}
+          >
+            {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+          </Button>
           {hasDemo && (
             <Button
               variant="danger"
@@ -339,13 +336,11 @@ function DataTab() {
             </Button>
           )}
         </div>
-        {!DEMO_ENABLED && (
-          <p className="mt-3 text-xs text-slate-500">
-            Демо вимкнено. Щоб увімкнути, запустіть застосунок зі змінною VITE_ENABLE_DEMO=1.
-          </p>
-        )}
+        <p className="mt-3 text-xs text-slate-500">
+          Демо-діти позначені в списку словом «демо». Якщо ви увійшли в акаунт, вони теж потраплять на інші ваші
+          пристрої — видалення прибирає їх звідусіль.
+        </p>
       </Card>
-      )}
 
       <Card title="Про дані">
         <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { newStudent, saveStudent } from '@journal/core';
-import { DEMO_ENABLED, seedDemo } from '../../dev/seed';
+import { newStudent, saveStudent, seedDemo } from '@journal/core';
 import { useStudents } from '../../state/student';
 import { Button, Card } from '../../components/ui';
 import { InstallCard } from '../../pwa/InstallPrompt';
@@ -53,11 +52,11 @@ export default function Welcome() {
         </Button>
       )}
 
-      {DEMO_ENABLED && (
       <Card title="Або подивіться на прикладі">
         <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
           Два вигаданих профілі: дитина цього навчального року (уроки до сьогодні, останній день заповнений частково)
-          і торішня історія вересень–листопад із покращенням у листопаді. Їх можна видалити в налаштуваннях.
+          і торішній I семестр повністю — вересень–грудень із покращенням після осінніх канікул. Це не справжні діти;
+          їх можна видалити в налаштуваннях.
         </p>
         <Button
           disabled={busy}
@@ -71,7 +70,6 @@ export default function Welcome() {
           {busy ? 'Створюю…' : 'Відкрити демо'}
         </Button>
       </Card>
-      )}
 
       <p className="text-xs text-slate-500">
         Дані зберігаються в цьому браузері (IndexedDB) і нікуди не надсилаються, поки ви не увійдете в акаунт у

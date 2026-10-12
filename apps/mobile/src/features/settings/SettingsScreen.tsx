@@ -94,9 +94,6 @@ function ProfileSection() {
   );
 }
 
-/** Демо вмикається лише в збірці для розробки: EXPO_PUBLIC_ENABLE_DEMO=1. */
-const DEMO_ENABLED = process.env.EXPO_PUBLIC_ENABLE_DEMO === '1';
-
 function DataSection() {
   const t = useTheme();
   const { students, setStudentId } = useStudents();
@@ -107,41 +104,41 @@ function DataSection() {
     <View style={{ gap: sp.lg }}>
       <BackupSection />
 
-      {(DEMO_ENABLED || hasDemo) && (
-        <Card title="Демо-дані">
-          <View style={{ gap: sp.md }}>
-            <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
-              Два профілі: поточний навчальний рік і торішня історія вересень–листопад — щоб подивитися дашборд і
-              порівняння місяців.
-            </Text>
-            {DEMO_ENABLED && (
-              <Button
-                disabled={busy}
-                onPress={async () => {
-                  setBusy(true);
-                  const { current } = await seedDemo();
-                  setStudentId(current.id);
-                  setBusy(false);
-                }}
-              >
-                {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
-              </Button>
-            )}
-            {hasDemo && (
-              <Button
-                variant="danger"
-                onPress={async () => {
-                  const other = students?.find((s) => !DEMO_IDS.includes(s.id));
-                  await removeDemo();
-                  if (other) setStudentId(other.id);
-                }}
-              >
-                Видалити демо
-              </Button>
-            )}
-          </View>
-        </Card>
-      )}
+      <Card title="Демо-дані">
+        <View style={{ gap: sp.md }}>
+          <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
+            Два вигаданих профілі, щоб спробувати застосунок, не чіпаючи справжніх записів: поточний навчальний рік і
+            торішній I семестр повністю — вересень–грудень, для дашборду й порівняння місяців.
+          </Text>
+          <Button
+            disabled={busy}
+            onPress={async () => {
+              setBusy(true);
+              const { current } = await seedDemo();
+              setStudentId(current.id);
+              setBusy(false);
+            }}
+          >
+            {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+          </Button>
+          {hasDemo && (
+            <Button
+              variant="danger"
+              onPress={async () => {
+                const other = students?.find((s) => !DEMO_IDS.includes(s.id));
+                await removeDemo();
+                if (other) setStudentId(other.id);
+              }}
+            >
+              Видалити демо
+            </Button>
+          )}
+          <Text style={{ color: t.muted, fontSize: font.xs, lineHeight: 18 }}>
+            Демо-діти позначені в списку словом «демо». Якщо ви увійшли в акаунт, вони потраплять і на інші ваші
+            пристрої — видалення прибирає їх звідусіль.
+          </Text>
+        </View>
+      </Card>
 
       <Card title="Про дані">
         <View style={{ gap: sp.sm }}>
