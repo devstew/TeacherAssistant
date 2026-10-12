@@ -9,6 +9,13 @@ const RULES: [RegExp, string][] = [
   [/rate limit|too many requests/i, 'забагато спроб поспіль — спробуйте за кілька хвилин'],
   [/signups not allowed|provider is disabled|email logins are disabled/i, 'вхід поштою вимкнено в налаштуваннях проєкту Supabase'],
   [/invalid email|unable to validate email/i, 'перевірте адресу пошти'],
+  // Supabase не зміг віддати листа поштовій службі: у відповідь приходить
+  // «Error sending magic link email» і код 500. Для асистента це глухий кут,
+  // тож прямо кажемо, що це поломка на боці застосунку, а не її помилка.
+  [
+    /error sending.*(email|mail)|smtp/i,
+    'не вдалося надіслати лист — це збій поштової служби, а не ваша помилка; спробуйте пізніше або зверніться до того, хто налаштовував застосунок',
+  ],
 ];
 
 export function friendlyError(raw: string): string {

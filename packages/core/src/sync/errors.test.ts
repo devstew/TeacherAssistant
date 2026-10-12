@@ -11,6 +11,12 @@ describe('friendlyError', () => {
     expect(friendlyError('For security purposes, you can only request this after 47 seconds.')).toContain('47');
   });
 
+  it("не лишає англійський збій пошти на екрані", () => {
+    const text = friendlyError('Error sending magic link email');
+    expect(text).not.toMatch(/magic link/i);
+    expect(text).toMatch(/не вдалося надіслати лист/i);
+  });
+
   it('не приховує незнайому помилку', () => {
     expect(friendlyError('duplicate key value violates unique constraint')).toBe(
       'duplicate key value violates unique constraint',
