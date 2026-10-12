@@ -86,7 +86,58 @@ function ProfileTab() {
           </Button>
         </div>
       </Card>
+      <DemoCard />
     </div>
+  );
+}
+
+/**
+ * Демо стоїть поруч зі списком дітей: це такі самі профілі, лише вигадані,
+ * і шукати їх асистент буде саме тут, а не серед резервних копій.
+ */
+function DemoCard() {
+  const { students, setStudentId } = useStudents();
+  const [busy, setBusy] = useState(false);
+  const hasDemo = students?.some((s) => DEMO_IDS.includes(s.id));
+
+  return (
+    <Card title="Демо-дані">
+      <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
+          Два вигаданих профілі, на яких можна спробувати застосунок, не чіпаючи справжніх записів: дитина цього
+        навчального року (уроки до сьогодні, останній день заповнений частково) і торішній I семестр повністю —
+        вересень–грудень, щоб подивитися дашборд, порівняння місяців і експорт.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            // Поточну дитину не чіпаємо: асистент прийшов у налаштування у своїй
+            // справі, і мовчки переставити його в демо означає підсунути чужий журнал.
+            await seedDemo();
+            setBusy(false);
+          }}
+        >
+          {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+        </Button>
+        {hasDemo && (
+          <Button
+            variant="danger"
+            onClick={async () => {
+              const other = students?.find((s) => !DEMO_IDS.includes(s.id));
+              await removeDemo();
+              if (other) setStudentId(other.id);
+            }}
+          >
+            Видалити демо
+          </Button>
+        )}
+      </div>
+      <p className="mt-3 text-xs text-slate-500">
+        Демо-діти позначені в списку вище словом «демо». Якщо ви увійшли в акаунт, вони теж потраплять на інші ваші
+        пристрої — видалення прибирає їх звідусіль.
+      </p>
+    </Card>
   );
 }
 
@@ -246,12 +297,10 @@ function ScoringTab() {
 }
 
 function DataTab() {
-  const { student, students, setStudentId } = useStudents();
+  const { student } = useStudents();
   const sync = useSync();
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const hasDemo = students?.some((s) => DEMO_IDS.includes(s.id));
 
   const saveBackup = async (onlyCurrent: boolean) => {
     const b = await exportBackup(onlyCurrent ? student?.id : undefined);
@@ -303,43 +352,6 @@ function DataTab() {
             <Notice tone={msg.tone}>{msg.text}</Notice>
           </div>
         )}
-      </Card>
-
-      <Card title="Демо-дані">
-        <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
-          Два вигаданих профілі, на яких можна спробувати застосунок, не чіпаючи справжніх записів: дитина цього
-          навчального року (уроки до сьогодні, останній день заповнений частково) і торішній I семестр повністю —
-          вересень–грудень, щоб подивитися дашборд, порівняння місяців і експорт.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              const { current } = await seedDemo();
-              setStudentId(current.id);
-              setBusy(false);
-            }}
-          >
-            {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
-          </Button>
-          {hasDemo && (
-            <Button
-              variant="danger"
-              onClick={async () => {
-                const other = students?.find((s) => !DEMO_IDS.includes(s.id));
-                await removeDemo();
-                if (other) setStudentId(other.id);
-              }}
-            >
-              Видалити демо
-            </Button>
-          )}
-        </div>
-        <p className="mt-3 text-xs text-slate-500">
-          Демо-діти позначені в списку словом «демо». Якщо ви увійшли в акаунт, вони теж потраплять на інші ваші
-          пристрої — видалення прибирає їх звідусіль.
-        </p>
       </Card>
 
       <Card title="Про дані">

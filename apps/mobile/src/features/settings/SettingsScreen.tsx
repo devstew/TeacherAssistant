@@ -90,55 +90,68 @@ function ProfileSection() {
           </Button>
         </View>
       </Card>
+
+      <DemoCard />
     </View>
   );
 }
 
-function DataSection() {
+/**
+ * Демо стоїть поруч зі списком дітей: це такі самі профілі, лише вигадані,
+ * і шукати їх асистент буде саме тут, а не серед резервних копій.
+ */
+function DemoCard() {
   const t = useTheme();
   const { students, setStudentId } = useStudents();
   const [busy, setBusy] = useState(false);
   const hasDemo = students?.some((s) => DEMO_IDS.includes(s.id));
 
   return (
-    <View style={{ gap: sp.lg }}>
-      <BackupSection />
-
-      <Card title="Демо-дані">
-        <View style={{ gap: sp.md }}>
-          <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
-            Два вигаданих профілі, щоб спробувати застосунок, не чіпаючи справжніх записів: поточний навчальний рік і
-            торішній I семестр повністю — вересень–грудень, для дашборду й порівняння місяців.
-          </Text>
+    <Card title="Демо-дані">
+      <View style={{ gap: sp.md }}>
+        <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
+          Два вигаданих профілі, щоб спробувати застосунок, не чіпаючи справжніх записів: поточний навчальний рік і
+          торішній I семестр повністю — вересень–грудень, для дашборду й порівняння місяців.
+        </Text>
+        <Button
+          disabled={busy}
+          onPress={async () => {
+            setBusy(true);
+            // Поточну дитину не чіпаємо: асистент прийшов у налаштування у своїй
+            // справі, і мовчки переставити його в демо означає підсунути чужий журнал.
+            await seedDemo();
+            setBusy(false);
+          }}
+        >
+          {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+        </Button>
+        {hasDemo && (
           <Button
-            disabled={busy}
+            variant="danger"
             onPress={async () => {
-              setBusy(true);
-              const { current } = await seedDemo();
-              setStudentId(current.id);
-              setBusy(false);
+              const other = students?.find((s) => !DEMO_IDS.includes(s.id));
+              await removeDemo();
+              if (other) setStudentId(other.id);
             }}
           >
-            {hasDemo ? 'Перестворити демо' : 'Завантажити демо'}
+            Видалити демо
           </Button>
-          {hasDemo && (
-            <Button
-              variant="danger"
-              onPress={async () => {
-                const other = students?.find((s) => !DEMO_IDS.includes(s.id));
-                await removeDemo();
-                if (other) setStudentId(other.id);
-              }}
-            >
-              Видалити демо
-            </Button>
-          )}
-          <Text style={{ color: t.muted, fontSize: font.xs, lineHeight: 18 }}>
-            Демо-діти позначені в списку словом «демо». Якщо ви увійшли в акаунт, вони потраплять і на інші ваші
-            пристрої — видалення прибирає їх звідусіль.
-          </Text>
-        </View>
-      </Card>
+        )}
+        <Text style={{ color: t.muted, fontSize: font.xs, lineHeight: 18 }}>
+          Демо-дітей видно у списку «Поточна дитина» — їхні імена починаються з «Демо:». Якщо ви увійшли в акаунт,
+          вони потраплять і на інші ваші пристрої; видалення прибирає їх звідусіль.
+        </Text>
+      </View>
+    </Card>
+  );
+}
+
+function DataSection() {
+  const t = useTheme();
+
+  return (
+    <View style={{ gap: sp.lg }}>
+      <BackupSection />
 
       <Card title="Про дані">
         <View style={{ gap: sp.sm }}>
