@@ -11,6 +11,12 @@ const RULES: [RegExp, string][] = [
   [/unsupported provider|provider is not enabled/i, 'вхід через Google ще не ввімкнено в налаштуваннях проєкту Supabase'],
   [/access_denied|access denied|user denied/i, 'вхід через Google скасовано'],
   [/flow state|code verifier|both auth code and code verifier/i, 'вхід через Google не завершився — почніть його ще раз у тому самому браузері'],
+  // Google відповів, але сервер не зміг цього прийняти: здебільшого Client ID чи
+  // Secret у Supabase не збігаються з тими, що в Google Cloud.
+  [
+    /unable to exchange external code|error getting user .* from external provider|database error saving new user/i,
+    'вхід через Google не вдався на сервері — це збій налаштувань, а не ваша помилка; поки що увійдіть кодом на пошту',
+  ],
   [/signups not allowed|provider is disabled|email logins are disabled/i, 'вхід поштою вимкнено в налаштуваннях проєкту Supabase'],
   [/invalid email|unable to validate email/i, 'перевірте адресу пошти'],
   // Supabase не зміг віддати листа поштовій службі: у відповідь приходить

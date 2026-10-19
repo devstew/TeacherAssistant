@@ -31,6 +31,7 @@ describe('повернення з Google', () => {
     expect(friendlyError('Unsupported provider: provider is not enabled')).toBe('Вхід через Google ще не ввімкнено в налаштуваннях проєкту Supabase.');
     expect(friendlyError('invalid flow state, no valid flow state found')).toContain('почніть його ще раз');
     expect(friendlyError('access_denied')).toBe('Вхід через Google скасовано.');
+    expect(friendlyError('Unable to exchange external code: 4/0AVG…')).toMatch(/^Вхід через Google не вдався на сервері/);
   });
 
   it('один код обмінюють один раз', async () => {

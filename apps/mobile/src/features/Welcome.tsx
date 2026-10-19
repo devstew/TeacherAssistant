@@ -5,6 +5,7 @@ import { Button, Card, Field, Input, PageTitle } from '@/components/ui';
 import { Screen } from '@/components/Screen';
 import { SyncSection } from '@/features/settings/SyncSection';
 import { useStudents } from '@/state/student';
+import { useSync } from '@/sync/SyncProvider';
 import { font, sp, useTheme } from '@/theme';
 
 /** Перший запуск: без дитини журнал не має про кого вести записи. */
@@ -14,12 +15,14 @@ export function Welcome() {
   const [className, setClassName] = useState('');
   const [assistantName, setAssistantName] = useState('');
   const [busy, setBusy] = useState(false);
-  const [signIn, setSignIn] = useState(false);
+  const { email, authError } = useSync();
+  // Хто вже увійшов або щойно отримав відмову Google, має бачити це одразу.
+  const [signIn, setSignIn] = useState<boolean>();
   const { setStudentId } = useStudents();
 
   // На новому телефоні журнал уже може лежати в акаунті — тоді створювати
   // дитину наново не треба, її принесе синхронізація.
-  if (signIn)
+  if (signIn ?? Boolean(authError || email))
     return (
       <Screen>
         <PageTitle title="Вхід в акаунт" subtitle="Журнал завантажиться з вашого облікового запису." />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { newStudent, saveStudent, seedDemo } from '@journal/core';
 import { useStudents } from '../../state/student';
+import { useSync } from '../../sync/SyncProvider';
 import { Button, Card } from '../../components/ui';
 import { InstallCard } from '../../pwa/InstallPrompt';
 import { StudentForm } from './StudentForm';
@@ -11,7 +12,11 @@ export default function Welcome() {
   const { setStudentId } = useStudents();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [signIn, setSignIn] = useState(false);
+  const { email, authError } = useSync();
+  // Після повернення з Google людина має одразу бачити, чим скінчився вхід,
+  // а не шукати це за кнопкою.
+  const [signIn, setSignIn] = useState<boolean>();
+  const showSignIn = signIn ?? Boolean(authError || email);
   return (
     <div className="mx-auto max-w-2xl space-y-4 px-4 py-8">
       <div className="flex items-center gap-3">
@@ -39,7 +44,7 @@ export default function Welcome() {
 
       {/* На новому пристрої журнал може вже лежати в акаунті — тоді дитину
           створювати не треба, її принесе синхронізація. */}
-      {signIn ? (
+      {showSignIn ? (
         <>
           <SyncTab />
           <Button variant="ghost" onClick={() => setSignIn(false)}>
