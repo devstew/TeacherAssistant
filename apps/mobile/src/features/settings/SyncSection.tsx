@@ -28,7 +28,7 @@ const time = (iso?: string) =>
   iso ? new Date(iso).toLocaleString('uk-UA', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '—';
 
 export function SyncSection() {
-  const { configured, email, status, codeSentTo, accountMismatch, signIn, verify, signOut, syncNow, wipeAndUseAccount } =
+  const { configured, email, status, codeSentTo, accountMismatch, signIn, verify, signInWithGoogle, authError, signOut, syncNow, wipeAndUseAccount } =
     useSync();
 
   if (!configured)
@@ -46,7 +46,7 @@ export function SyncSection() {
   return email ? (
     <SignedIn email={email} status={status} onSync={syncNow} onSignOut={signOut} />
   ) : (
-    <SignIn codeSentTo={codeSentTo} onSignIn={signIn} onVerify={verify} />
+    <SignIn codeSentTo={codeSentTo} onSignIn={signIn} onVerify={verify} onGoogle={signInWithGoogle} authError={authError} />
   );
 }
 
@@ -85,10 +85,14 @@ function SignIn({
   codeSentTo,
   onSignIn,
   onVerify,
+  onGoogle,
+  authError,
 }: {
   codeSentTo?: string;
   onSignIn: (email: string) => Promise<void>;
   onVerify: (code: string) => Promise<void>;
+  onGoogle?: () => Promise<void>;
+  authError?: string;
 }) {
   const t = useTheme();
   const [email, setEmail] = useState('');
@@ -115,6 +119,15 @@ function SignIn({
         <Text style={{ color: t.subtle, fontSize: font.sm, lineHeight: 20 }}>
           Увійдіть, щоб журнал був і на телефоні, і на комп’ютері. Записи зберігаються в захищеній базі: їх бачите лише ви.
         </Text>
+
+        {onGoogle && !codeSentTo && !haveLink && (
+          <>
+            <Button variant="secondary" disabled={busy} onPress={() => void run(onGoogle)}>
+              Увійти через Google
+            </Button>
+            <Text style={{ color: t.subtle, fontSize: font.xs }}>Або кодом на робочу пошту:</Text>
+          </>
+        )}
 
         {codeSentTo || haveLink ? (
           <>
@@ -160,7 +173,7 @@ function SignIn({
             </Button>
           </>
         )}
-        {error && <Notice tone="bad">{error}</Notice>}
+        {(error ?? authError) && <Notice tone="bad">{error ?? authError}</Notice>}
       </View>
     </Card>
   );

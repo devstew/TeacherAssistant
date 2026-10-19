@@ -238,6 +238,59 @@ Xcode живе 7 днів. Тому для iPhone каналом лишаєть�
 > ваша адреса, пароль — [пароль застосунку](https://support.google.com/accounts/answer/185833)
 > (потрібна двофакторна автентифікація). Тоді листи йдуть кому завгодно, до ~500 на добу.
 
+### Вхід через Google
+
+Найпростіший спосіб пустити людей без власного поштового домену: адресу підтверджує сам
+Google, листів не треба. Кнопка **«Увійти через Google»** з'являється на вкладці
+«Синхронізація» лише тоді, коли провайдер увімкнено в проєкті Supabase (застосунок питає
+`/auth/v1/settings`); вхід кодом на пошту лишається поруч. Обліковий запис той самий: якщо
+людина вже входила кодом на цю адресу Gmail, Supabase прив'яже Google до наявного користувача
+за підтвердженою адресою, і записи нікуди не дінуться.
+
+1. [Google Cloud Console](https://console.cloud.google.com) → новий проєкт (напр. «Журнал асистента»).
+2. **Google Auth Platform → Branding** (колишній OAuth consent screen): назва застосунку,
+   пошта підтримки; **Audience → External**. Дозволи — лише типові `openid`, `email`,
+   `profile`: без чутливих перевірка Google не потрібна. Потім **Audience → Publish app**
+   (In production) — інакше увійдуть тільки додані вручну тестові користувачі.
+3. **Clients → Create client → Web application**:
+   - Authorized JavaScript origins: `https://teacher-assistant-journal.vercel.app`, `http://localhost:5173`
+   - Authorized redirect URIs: `https://<ref>.supabase.co/auth/v1/callback` — для нашого
+     проєкту `https://koejvoyfhkzxayimijbb.supabase.co/auth/v1/callback` (точну адресу
+     Supabase показує на сторінці провайдера Google).
+
+   Скопіюйте Client ID і Client Secret.
+4. **Supabase → Authentication → Sign In / Providers → Google**: Enable, вставте Client ID і
+   Client Secret, Save. Секрет живе тільки там — ні в репозиторії, ні в `.env`, ні у Vercel
+   його немає.
+5. **Authentication → URL Configuration**: Site URL — `https://teacher-assistant-journal.vercel.app`;
+   у Redirect URLs додайте, куди Supabase дозволено повертати після Google:
+   - `https://teacher-assistant-journal.vercel.app/**`
+   - `http://localhost:5173/**`
+   - `journal://auth` — Android-застосунок
+
+Як це працює: OAuth із PKCE (`packages/core/src/sync/oauth.ts`). Веб іде на Google і
+повертається на ту саму адресу з `?code=…`; застосунок обмінює код на сесію й прибирає його
+з адресного рядка. `detectSessionInUrl` вимкнено, бо HashRouter і так зайнятий хешем —
+обмін робимо самі, рівно один раз. Android відкриває системний браузер (`expo-web-browser`)
+і ловить повернення на `journal://auth`; модуль нативний, тож потрібна нова збірка APK.
+
+Застереження:
+
+- У вікні згоди Google пише «продовжити до `koejvoyfhkzxayimijbb.supabase.co`». Прибрати це
+  можна лише власним доменом для Supabase (Custom Domain, платно); назву застосунку з
+  пункту 2 Google показує все одно.
+- iPhone із журналом на головному екрані — ще не перевірено. Якщо iOS поверне з Google у
+  Safari замість застосунку, сесія з'явиться в Safari; тоді на iPhone входьте кодом на пошту.
+- Google не обмежує, хто входить: будь-який обліковий запис Google отримає свій порожній
+  журнал. Чужих записів він не побачить — це тримає RLS.
+
+> **Якщо не входить ні кодом, ні через Google, а застосунок пише «немає зв'язку з
+> сервером».** Безкоштовний проєкт Supabase стає на паузу після 7 днів без запитів, і його
+> адреса `https://<ref>.supabase.co` перестає існувати навіть у DNS. Відновлення —
+> **Dashboard → проєкт → Restore project** (кілька хвилин); дані не втрачаються, але після
+> 90 днів паузи відновити проєкт кнопкою вже не вийде. Щоб пауз не було — тариф Pro або
+> щоденний запит до API (напр. розклад у GitHub Actions).
+
 Як це працює: спершу відправка своїх змін, потім завантаження чужих сторінками по 500; курсор —
 лічильник сервера `server_seq`, конфлікт виграє запис із пізнішим `updated_at`, а той, що програв,
 лишається в журналі конфліктів на вкладці «Синхронізація». Видалення м'які — «надгробок» із часом.

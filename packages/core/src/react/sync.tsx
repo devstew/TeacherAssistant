@@ -21,12 +21,20 @@ import { onChanged } from '../store/events';
 import { adoptLocalData, checkAccount, resetForOwner } from '../sync/account';
 import { SyncEngine } from '../sync/engine';
 import { friendlyError } from '../sync/errors';
+import { finishOAuth, parseOAuthReturn } from '../sync/oauth';
 import { parseSignInInput } from '../sync/signInInput';
 import { supabaseBackend } from '../sync/supabase';
 import type { SyncStatus } from '../sync/types';
 
 /** Повертає функцію відписки; `sync` можна смикати скільки завгодно. */
 export type SyncTriggers = (sync: () => void) => () => void;
+
+/**
+ * Як на цій платформі пройти вхід через Google. Веб переадресовує сторінку
+ * (далі — `returnUrl` при наступному завантаженні), телефон відкриває
+ * вбудований браузер і сам обмінює код на сесію.
+ */
+export type GoogleSignIn = (client: SupabaseClient) => Promise<void>;
 
 export interface SyncContextValue {
   /** Чи є в цій збірці ключі сервера. Без них застосунок працює лише локально. */
@@ -39,6 +47,10 @@ export interface SyncContextValue {
   accountMismatch?: string;
   signIn: (email: string) => Promise<void>;
   verify: (code: string) => Promise<void>;
+  /** Немає — на цій збірці вхід через Google не налаштовано. */
+  signInWithGoogle?: () => Promise<void>;
+  /** Чим скінчилося повернення з Google, якщо не вдалося. */
+  authError?: string;
   signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
   wipeAndUseAccount: () => Promise<void>;
@@ -59,10 +71,21 @@ const Ctx = createContext<SyncContextValue>({
 export function SyncProvider({
   client,
   triggers,
+  google,
+  googleEnabled,
+  returnUrl,
+  onReturnHandled,
   children,
 }: {
   client: SupabaseClient | null;
   triggers?: SyncTriggers;
+  google?: GoogleSignIn;
+  /** Чи ввімкнено Google у проєкті; поки ні — кнопки немає. */
+  googleEnabled?: () => Promise<boolean>;
+  /** Адреса, з якою відкрили застосунок: у ній може бути відповідь Google. */
+  returnUrl?: string;
+  /** Прибрати код із рядка адреси, щойно його використали. */
+  onReturnHandled?: () => void;
   children: ReactNode;
 }) {
   const [userId, setUserId] = useState<string>();
@@ -71,7 +94,28 @@ export function SyncProvider({
   const [codeSentTo, setCodeSentTo] = useState<string>();
   const [accountMismatch, setAccountMismatch] = useState<string>();
   const [reload, setReload] = useState(0);
+  const [authError, setAuthError] = useState<string>();
+  const [googleOn, setGoogleOn] = useState(false);
   const engine = useRef<SyncEngine | null>(null);
+
+  useEffect(() => {
+    if (!client || !google) return;
+    let alive = true;
+    void (googleEnabled ? googleEnabled() : Promise.resolve(true)).then((on) => alive && setGoogleOn(on));
+    return () => {
+      alive = false;
+    };
+  }, [client, google, googleEnabled]);
+
+  // Повернулися з Google: обміняти код на сесію (решту зробить onAuthStateChange).
+  useEffect(() => {
+    if (!client) return;
+    const ret = parseOAuthReturn(returnUrl);
+    if (!ret) return;
+    onReturnHandled?.();
+    void finishOAuth(client, ret).then((message) => message && setAuthError(message));
+    // returnUrl — адреса першого завантаження, вона не змінюється.
+  }, [client]);
 
   useEffect(() => {
     if (!client) return;
@@ -156,6 +200,17 @@ export function SyncProvider({
     [client, codeSentTo],
   );
 
+  const signInWithGoogle = useMemo(
+    () =>
+      client && google && googleOn
+        ? async () => {
+            setAuthError(undefined);
+            await google(client);
+          }
+        : undefined,
+    [client, google, googleOn],
+  );
+
   const signOut = useCallback(async () => {
     await client?.auth.signOut();
     setStatus(idle);
@@ -183,11 +238,13 @@ export function SyncProvider({
       accountMismatch,
       signIn,
       verify,
+      signInWithGoogle,
+      authError,
       signOut,
       syncNow,
       wipeAndUseAccount,
     }),
-    [client, email, status, codeSentTo, accountMismatch, signIn, verify, signOut, syncNow, wipeAndUseAccount],
+    [client, email, status, codeSentTo, accountMismatch, signIn, verify, signInWithGoogle, authError, signOut, syncNow, wipeAndUseAccount],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

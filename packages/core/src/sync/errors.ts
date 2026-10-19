@@ -7,6 +7,10 @@ const RULES: [RegExp, string][] = [
   [/expired|invalid token|otp|invalid or has expired/i, 'код неправильний або застарів — надішліть новий'],
   [/only request this after (\d+) second/i, 'новий код можна попросити через $1 с'],
   [/rate limit|too many requests/i, 'забагато спроб поспіль — спробуйте за кілька хвилин'],
+  // Вхід через Google: вимкнений у Supabase, людина передумала, повернулася не в той браузер.
+  [/unsupported provider|provider is not enabled/i, 'вхід через Google ще не ввімкнено в налаштуваннях проєкту Supabase'],
+  [/access_denied|access denied|user denied/i, 'вхід через Google скасовано'],
+  [/flow state|code verifier|both auth code and code verifier/i, 'вхід через Google не завершився — почніть його ще раз у тому самому браузері'],
   [/signups not allowed|provider is disabled|email logins are disabled/i, 'вхід поштою вимкнено в налаштуваннях проєкту Supabase'],
   [/invalid email|unable to validate email/i, 'перевірте адресу пошти'],
   // Supabase не зміг віддати листа поштовій службі: у відповідь приходить

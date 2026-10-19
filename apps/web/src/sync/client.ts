@@ -8,6 +8,8 @@ export const syncConfigured = Boolean(url && anonKey);
 
 export const supabase: SupabaseClient | null = syncConfigured
   ? createClient(url as string, anonKey as string, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+      // PKCE: Google повертає ?code=… у query, а не токени після «#», де живе маршрут HashRouter.
+      // Обмін коду робить SyncProvider сам, тож автоматичний розбір адреси вимкнено.
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' },
     })
   : null;

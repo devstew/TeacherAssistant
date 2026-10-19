@@ -32,6 +32,7 @@ export * from './dev/seed';
 export * from './sync/types';
 export * from './sync/errors';
 export * from './sync/signInInput';
+export * from './sync/oauth';
 export * from './sync/engine';
 export * from './sync/fakeBackend';
 export * from './sync/supabase';

@@ -14,8 +14,10 @@ export const supabase: SupabaseClient | null = syncConfigured
         storage: AsyncStorage,
         persistSession: true,
         autoRefreshToken: true,
-        // Посилань із листа немає: вхід відбувається одноразовим кодом.
+        // Адресу розбираємо самі: код із листа вводять руками, а повернення з Google
+        // (journal://auth?code=…) обробляє SyncProvider. PKCE — щоб прийшов саме код.
         detectSessionInUrl: false,
+        flowType: 'pkce',
       },
     })
   : null;
